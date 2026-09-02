@@ -1,0 +1,115 @@
+classDiagram
+    App *-- Menu
+    Menu *-- SessionManager
+    Menu *-- Player
+    Menu *-- InputHandler
+
+    InputHandler *-- InputValidator
+    InputValidator *-- ValidationRule
+
+    SessionManager *-- SessionRepository
+    SessionRepository o-- Session
+
+    Player *-- Interpreter
+    Player *-- JFuguePlayer
+    Interpreter *-- DomainMapper
+    Interpreter *-- PlayerConfig
+    PlayerConfig *-- PlaybackParameters
+
+    class App {
+        -Menu menu
+        +void run()
+    }
+
+    class Menu {
+        -SessionManager sessionManager
+        -PlaybackService playbackService
+        -InputHandler inputHandler
+        +void show()
+    }
+
+    class InputHandler {
+        -InputValidator validator
+        +String handle()
+    }
+
+    class InputValidator {
+        -List~ValidationRule~ rules
+        +void validate(String input)
+    }
+
+    class ValidationRule {
+        +void validate(String input)
+    }
+
+    class SessionManager {
+        -SessionRepository repository
+        +Session createSession(String name)
+        +void deleteSession(int id)
+        +Session openSession(int id)
+    }
+
+    class SessionRepository {
+        -List~Session~ sessions
+        +Session getById(int id)
+        +Session create(String name)
+        +void deleteById(int id)
+        +void save(Session s)
+    }
+
+    class Session {
+        -int id
+        -String name
+        -String sessionFilePath
+        -String recordingFilePath
+        +int getId()
+        +String getName()
+        +void setName(String name)
+        +String getSessionFilePath()
+        +String getRecordingFilePath()
+        +boolean hasRecording()
+    }
+
+    class Player {
+        -Interpreter interpreter
+        -JFuguePlayer player
+        +void play(Session session)
+        +void pause(Session session)
+        +configure
+    }
+
+    class Interpreter {
+        -DomainMapper mapper
+        -PlayerConfig playerConfig
+        +String interpret(String text)
+    }
+
+    class DomainMapper {
+        +void toDomain(char c, PlayerConfig ctx)
+    }
+
+    class PlayerConfig {
+        -int instrument
+        -int octave
+        -int volume
+        -int bpm
+        -PlaybackParameters params
+        -StringBuilder output
+        +void reset()
+        +void setInstrument(int midi)
+        +void changeOctave(int delta)
+        +void doubleVolume()
+        +String getPattern()
+    }
+
+    class PlaybackParameters {
+        -int defaultBpm
+        -int defaultInstrument
+        -int defaultOctave
+        -int defaultVolume
+        -int maxVolume
+    }
+
+    class JFuguePlayer {
+        +void play(String pattern)
+    }
