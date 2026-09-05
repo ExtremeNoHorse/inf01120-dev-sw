@@ -27,6 +27,21 @@
     <jacoco.line.coverage.min>0.00</jacoco.line.coverage.min>
   </properties>
 
+  <repositories>
+    <!-- In-tree local repo for JFugue (not published to Maven Central). -->
+    <repository>
+      <id>project-local-libs</id>
+      <name>Project libs/</name>
+      <url>file:${project.basedir}/libs</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.jfugue</groupId>
