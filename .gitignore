@@ -54,6 +54,8 @@ replay_pid*
 .idea/*.iml
 # Nunca versionar: contém URLs de repositórios internos configurados por cada dev
 .idea/jarRepositories.xml
+# Nunca versionar: contém nome de SDK específico do dev (varia por máquina/empresa)
+.idea/misc.xml
 *.iml
 
 # Maven

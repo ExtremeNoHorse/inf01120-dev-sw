@@ -5,7 +5,10 @@
     <scanScope>AllSourcesWithTests</scanScope>
     <scanBeforeCheckin>true</scanBeforeCheckin>
     <importSettingsFromMaven>true</importSettingsFromMaven>
-    <option name="thirdPartyClasspath" />
+    <option name="thirdPartyClasspath">
+      <option value="$MAVEN_REPOSITORY$/xalan/xalan/2.7.3/xalan-2.7.3.jar" />
+      <option value="$MAVEN_REPOSITORY$/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.jar" />
+    </option>
     <option name="activeLocationIds">
       <option value="16276568-7915-4a32-8465-f4dd01fa92f5" />
       <option value="maven-config-location" />

@@ -101,6 +101,17 @@
             <artifactId>checkstyle</artifactId>
             <version>${checkstyle.version}</version>
           </dependency>
+          <!-- Overrides para silenciar CVEs em transitivas usadas só por site-report. -->
+          <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.3</version>
+          </dependency>
+          <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+          </dependency>
         </dependencies>
         <configuration>
           <configLocation>checkstyle.xml</configLocation>

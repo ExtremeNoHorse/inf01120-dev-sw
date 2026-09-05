@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configurações do Maven para o projeto TTM.
+  Sobrescreve o ~/.m2/settings.xml global do dev garantindo que todas as
+  dependências saiam do Maven Central público e do JitPack.
+  Uso: ativado automaticamente por .mvn/maven.config (flag -s).
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <!-- Local repository dedicado do projeto, evita contaminação do cache global. -->
+  <localRepository>${user.home}/.m2/repository</localRepository>
+
+  <mirrors>
+    <!--
+      Neutraliza qualquer mirror definido no settings.xml global (por ex. do PC
+      da empresa) para este projeto: força Maven Central público como espelho
+      apenas dele mesmo, sem redirecionar demais repos declarados no pom.xml.
+    -->
+    <mirror>
+      <id>maven-central-public</id>
+      <name>Maven Central público</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+
+  <profiles>
+    <profile>
+      <id>public-repos</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>jitpack.io</id>
+          <url>https://jitpack.io</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>public-repos</activeProfile>
+  </activeProfiles>
+</settings>
