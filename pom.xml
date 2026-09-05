@@ -28,7 +28,7 @@
   </properties>
 
   <repositories>
-    <!-- JitPack: JFugue is not on Maven Central. JensPiegsa/jfugue is a maintained mirror with a proper pom. -->
+    <!-- JitPack: JFugue não está no Maven Central. JensPiegsa/jfugue é um mirror mantido com pom próprio. -->
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>

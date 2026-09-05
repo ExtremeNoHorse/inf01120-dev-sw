@@ -1,34 +1,34 @@
-# Development Guide
+# Guia de Desenvolvimento
 
-## Requirements
+## Requisitos
 - JDK 17
 - Maven 3.9+
 
-## Setup — enable pre-commit hook (once per clone)
+## Configuração — habilitar o hook de pre-commit (uma vez por clone)
 ```bash
 git config core.hooksPath .githooks
 ```
 
-## Common commands
-| Task | Command |
-|------|---------|
-| Compile | `mvn compile` |
-| Run tests | `mvn test` |
-| Full quality gate (tests + coverage + style + bugs) | `mvn verify` |
-| Auto-format code | `mvn spotless:apply` |
-| Format check only | `mvn spotless:check` |
-| Style check | `mvn checkstyle:check` |
-| Static bug analysis | `mvn spotbugs:check` |
-| Bug report (HTML/GUI) | `mvn spotbugs:gui` |
-| Coverage report | open `target/site/jacoco/index.html` after `mvn verify` |
+## Comandos comuns
+| Tarefa | Comando |
+|--------|---------|
+| Compilar | `mvn compile` |
+| Rodar testes | `mvn test` |
+| Quality gate completo (testes + cobertura + estilo + bugs) | `mvn verify` |
+| Formatar código automaticamente | `mvn spotless:apply` |
+| Apenas verificar formatação | `mvn spotless:check` |
+| Verificar estilo | `mvn checkstyle:check` |
+| Análise estática de bugs | `mvn spotbugs:check` |
+| Relatório de bugs (HTML/GUI) | `mvn spotbugs:gui` |
+| Relatório de cobertura | abrir `target/site/jacoco/index.html` após `mvn verify` |
 
-## Quality gates enforced
-- **Spotless** — Google Java Format. CI fails if unformatted.
-- **Checkstyle** — see `checkstyle.xml`. Warnings fail the build.
+## Quality gates aplicados
+- **Spotless** — Google Java Format. CI falha se código não estiver formatado.
+- **Checkstyle** — ver `checkstyle.xml`. Warnings quebram o build.
 - **SpotBugs** — effort=Max, threshold=Low.
-- **JaCoCo** — line coverage ≥ 70% (`jacoco.line.coverage.min` in `pom.xml`).
+- **JaCoCo** — cobertura de linhas ≥ 70% (`jacoco.line.coverage.min` no `pom.xml`).
 
-All four run in `mvn verify`, in the pre-commit hook (Spotless + Checkstyle only, for speed), and in GitHub Actions on every push and PR to `main`.
+Os quatro rodam em `mvn verify`, no hook de pre-commit (apenas Spotless + Checkstyle, para ser rápido) e no GitHub Actions em todo push e PR para `main`.
 
-## Adjusting the coverage threshold
-Edit `<jacoco.line.coverage.min>` in `pom.xml`. Start lax while codebase is small, tighten as it grows.
+## Ajustar o limite de cobertura
+Editar `<jacoco.line.coverage.min>` no `pom.xml`. Começar baixo enquanto a base de código é pequena, apertar conforme cresce.

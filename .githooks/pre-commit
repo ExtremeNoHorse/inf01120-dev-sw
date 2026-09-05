@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Pre-commit hook: run format + style checks on staged Java files.
-# Install: git config core.hooksPath .githooks
+# Hook de pre-commit: roda checagens de formatação e estilo nos arquivos Java staged.
+# Instalação: git config core.hooksPath .githooks
 
 set -euo pipefail
 
@@ -10,21 +10,21 @@ if [ -z "$STAGED_JAVA" ]; then
     exit 0
 fi
 
-echo "[pre-commit] Java files staged — running Spotless + Checkstyle."
+echo "[pre-commit] Arquivos Java staged — rodando Spotless + Checkstyle."
 
 if ! command -v mvn >/dev/null 2>&1; then
-    echo "[pre-commit] mvn not found on PATH. Skipping. Install Maven to enable checks."
+    echo "[pre-commit] mvn não encontrado no PATH. Pulando. Instale o Maven para habilitar as checagens."
     exit 0
 fi
 
 if ! mvn -q -o spotless:check >/dev/null 2>&1; then
-    echo "[pre-commit] Spotless violations. Auto-fix with: mvn spotless:apply"
+    echo "[pre-commit] Violações do Spotless. Corrigir automaticamente com: mvn spotless:apply"
     mvn -q spotless:check || true
     exit 1
 fi
 
 if ! mvn -q checkstyle:check; then
-    echo "[pre-commit] Checkstyle violations. Fix above and re-commit."
+    echo "[pre-commit] Violações do Checkstyle. Corrija os erros acima e faça o commit novamente."
     exit 1
 fi
 
