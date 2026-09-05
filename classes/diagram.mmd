@@ -1,20 +1,25 @@
 classDiagram
     App *-- Menu
-    Menu *-- SessionManager
+    Menu *-- MusicManager
     Menu *-- Player
     Menu *-- InputHandler
 
     InputHandler *-- InputValidator
     InputValidator *-- ValidationRule
 
-    SessionManager *-- SessionRepository
-    SessionRepository o-- Session
+    MusicManager *-- MusicRepository
+    MusicRepository o-- Music
+    Music *-- FileHandler
 
     Player *-- Interpreter
-    Player *-- JFuguePlayer
+    Interpreter *-- JFuguePlayer
     Interpreter *-- DomainMapper
     Interpreter *-- PlayerConfig
     PlayerConfig *-- PlaybackParameters
+
+    DomainMapper *-- Command
+    Command <|-- Note
+    Command <|-- ConfigUpdate
 
     class App {
         -Menu menu
@@ -22,7 +27,7 @@ classDiagram
     }
 
     class Menu {
-        -SessionManager sessionManager
+        -MusicManager MusicManager
         -PlaybackService playbackService
         -InputHandler inputHandler
         +void show()
@@ -42,50 +47,72 @@ classDiagram
         +void validate(String input)
     }
 
-    class SessionManager {
-        -SessionRepository repository
-        +Session createSession(String name)
-        +void deleteSession(int id)
-        +Session openSession(int id)
+    class MusicManager {
+        -MusicRepository repository
+        +Music createMusic(String name)
+        +void deleteMusic(int id)
+        +Music openMusic(int id)
     }
 
-    class SessionRepository {
-        -List~Session~ sessions
-        +Session getById(int id)
-        +Session create(String name)
+    class MusicRepository {
+        -List~Music~ Musics
+        +Music getById(int id)
+        +Music create(String name)
         +void deleteById(int id)
-        +void save(Session s)
+        +void save(Music s)
     }
 
-    class Session {
+    class Music {
         -int id
         -String name
-        -String sessionFilePath
-        -String recordingFilePath
+        -FileHandler fileHandler
         +int getId()
         +String getName()
         +void setName(String name)
-        +String getSessionFilePath()
-        +String getRecordingFilePath()
         +boolean hasRecording()
+    }
+
+    class FileHandler {
+        -String musicFilePath
+        -String recordingFilePath
+        -void writeFile()
+        -void saveFile()
+        -void deleteFile()
     }
 
     class Player {
         -Interpreter interpreter
-        -JFuguePlayer player
-        +void play(Session session)
-        +void pause(Session session)
-        +configure
+        +void play(Music music)
+        +void pause(Music music)
+        +void configure(PlayerConfig config)
     }
 
     class Interpreter {
         -DomainMapper mapper
         -PlayerConfig playerConfig
+        -JFuguePlayer player
+        -String music
         +String interpret(String text)
     }
 
     class DomainMapper {
-        +void toDomain(char c, PlayerConfig ctx)
+        +Command toDomain(char c)
+    }
+
+    class Command {
+        <<Interface>>
+        +void execute()
+    }
+
+    class Note {
+        -char cmd
+
+        +void execute()
+    }
+
+    class ConfigUpdate {
+        -char cmd
+        +void execute()
     }
 
     class PlayerConfig {
@@ -113,3 +140,4 @@ classDiagram
     class JFuguePlayer {
         +void play(String pattern)
     }
+
