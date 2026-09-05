@@ -1,7 +1,7 @@
 # Guia de Desenvolvimento
 
 ## Requisitos
-- JDK 17
+- JDK 25
 - Maven 3.9+
 
 ## Configuração — habilitar o hook de pre-commit (uma vez por clone)
