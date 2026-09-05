@@ -24,7 +24,6 @@
     </module>
 
     <!-- Um top-level type por arquivo -->
-    <module name="OuterTypeFilename"/>
     <module name="UniqueProperties"/>
 
     <!-- Arquivos não podem ficar vazios -->
@@ -40,6 +39,10 @@
         </module>
         <module name="MissingOverride"/>
         <module name="MissingDeprecated"/>
+
+        <!-- Um top-level type por arquivo -->
+        <module name="OuterTypeFilename"/>
+        <module name="OneTopLevelClass"/>
 
         <!-- Imports -->
         <module name="AvoidStarImport"/>
@@ -97,7 +100,6 @@
         </module>
 
         <!-- Estrutura -->
-        <module name="OneTopLevelClass"/>
         <module name="NoLineWrap"/>
         <module name="EmptyBlock">
             <property name="option" value="TEXT"/>
