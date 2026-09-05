@@ -25,3 +25,14 @@ replay_pid*
 
 # personal IntelliJ configuration files
 .idea/*
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!libs/**/*.jar
+
+# VS Code / Eclipse
+.vscode/
+.classpath
+.project
+.settings/
