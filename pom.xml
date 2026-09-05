@@ -28,11 +28,10 @@
   </properties>
 
   <repositories>
-    <!-- In-tree local repo for JFugue (not published to Maven Central). -->
+    <!-- JitPack: JFugue is not on Maven Central. JensPiegsa/jfugue is a maintained mirror with a proper pom. -->
     <repository>
-      <id>project-local-libs</id>
-      <name>Project libs/</name>
-      <url>file:${project.basedir}/libs</url>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -44,7 +43,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.jfugue</groupId>
+      <groupId>com.github.JensPiegsa</groupId>
       <artifactId>jfugue</artifactId>
       <version>${jfugue.version}</version>
     </dependency>

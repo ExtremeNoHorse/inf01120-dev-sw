@@ -29,7 +29,6 @@ replay_pid*
 # Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!libs/**/*.jar
 
 # VS Code / Eclipse
 .vscode/
