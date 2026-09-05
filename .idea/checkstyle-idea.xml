@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CheckStyle-IDEA" serialisationVersion="2">
+    <checkstyleVersion>14.1.0</checkstyleVersion>
+    <scanScope>AllSourcesWithTests</scanScope>
+    <scanBeforeCheckin>true</scanBeforeCheckin>
+    <importSettingsFromMaven>true</importSettingsFromMaven>
+    <option name="thirdPartyClasspath" />
+    <option name="activeLocationIds">
+      <option value="16276568-7915-4a32-8465-f4dd01fa92f5" />
+      <option value="maven-config-location" />
+    </option>
+    <option name="locations">
+      <list>
+        <ConfigurationLocation id="bundled-sun-checks" type="BUNDLED" scope="All" description="Sun Checks">bundled-sun-checks</ConfigurationLocation>
+        <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">bundled-google-checks</ConfigurationLocation>
+        <ConfigurationLocation id="maven-config-location" type="PROJECT_RELATIVE" scope="All" description="Maven Config Location">$PROJECT_DIR$/checkstyle.xml</ConfigurationLocation>
+        <ConfigurationLocation id="16276568-7915-4a32-8465-f4dd01fa92f5" type="LOCAL_FILE" scope="All" description="Project TTM">$PROJECT_DIR$/checkstyle.xml</ConfigurationLocation>
+      </list>
+    </option>
+  </component>
+</project>

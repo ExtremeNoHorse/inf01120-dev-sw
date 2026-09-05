@@ -23,8 +23,38 @@
 hs_err_pid*
 replay_pid*
 
-# Configurações pessoais do IntelliJ
-.idea/*
+# IntelliJ — compartilhar padrões de código; ignorar apenas artefatos pessoais/caches
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/dictionaries/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/dataSources.xml
+.idea/**/dbnavigator.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/mongoSettings.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/httpRequests
+.idea/caches/
+.idea/modules.xml
+.idea/*.iml
+# Nunca versionar: contém URLs de repositórios internos configurados por cada dev
+.idea/jarRepositories.xml
+*.iml
 
 # Maven
 target/
