@@ -1,0 +1,164 @@
+%% TTM - Diagrama refatorado (Fase 1)
+%% Original preservado em classes/diagram.mmd.
+%%
+%% Mudancas vs original (motivadas pelos resumos R01/R02/R03/Cap5-OOSC):
+%%   1. Menu vira App (unica classe UI/composition root; CLI hoje, GUI depois).
+%%   2. Interpreter dividido: Interpreter (char->pattern) + Player (executa).
+%%   3. AudioEngine interface esconde JFugue (info hiding R02) e expoe exportMidi.
+%%   4. MusicRepository vira interface; FileMusicRepository usa java.nio direto.
+%%   5. Command.execute(PlayerConfig) - sem acoplamento reverso.
+%%   6. TtmException + ErrorCode substituem varios exception types.
+%%   7. PlaybackListener = Consumer<Integer> do JDK (sem interface propria).
+%%   8. PlaybackParameters vira constantes em PlayerConfig.
+%%   9. Terminologia: Music (mockup) substitui Session.
+
+classDiagram
+    App *-- InputValidator
+    App *-- MusicRepository
+    App *-- Player
+
+    MusicRepository <|.. FileMusicRepository
+    MusicRepository o-- Music
+
+    Player *-- Interpreter
+    Player *-- AudioEngine
+    AudioEngine <|.. JFuguePlayer
+
+    Interpreter *-- DomainMapper
+    Interpreter *-- PlayerConfig
+
+    DomainMapper *-- Command
+    Command <|.. Note
+    Command <|.. ConfigUpdate
+
+    TtmException *-- ErrorCode
+
+    class App {
+        -InputValidator validator
+        -MusicRepository repository
+        -Player player
+        +static void main(String[] args)
+        +int run(String[] args)
+    }
+
+    class InputValidator {
+        -List~Predicate~String~~ rules
+        +void validate(String input)
+    }
+
+    class MusicRepository {
+        <<interface>>
+        +Music save(Music m)
+        +Music getById(String id)
+        +List~Music~ findAll()
+        +void deleteById(String id)
+    }
+
+    class FileMusicRepository {
+        -Path baseDir
+        +Music save(Music m)
+        +Music getById(String id)
+        +List~Music~ findAll()
+        +void deleteById(String id)
+    }
+
+    class Music {
+        -String id
+        -String name
+        -String source
+        +String getId()
+        +String getName()
+        +void setName(String name)
+        +String getSource()
+        +void setSource(String source)
+        +boolean hasRecording()
+    }
+
+    class Player {
+        -Interpreter interpreter
+        -AudioEngine audioEngine
+        -Consumer~Integer~ onCharPlayed
+        +void play(Music music)
+        +void pause()
+        +void resume()
+        +void stop()
+        +void configure(PlayerConfig config)
+        +Path export(Music music, Path targetPath)
+        +void onCharPlayed(Consumer~Integer~ listener)
+    }
+
+    class Interpreter {
+        -DomainMapper mapper
+        -PlayerConfig playerConfig
+        +String interpret(String text)
+    }
+
+    class DomainMapper {
+        -Map~Character,Command~ table
+        +Command toDomain(char c)
+        +boolean supports(char c)
+    }
+
+    class Command {
+        <<interface>>
+        +void execute(PlayerConfig config)
+    }
+
+    class Note {
+        -char cmd
+        +void execute(PlayerConfig config)
+    }
+
+    class ConfigUpdate {
+        -char cmd
+        +void execute(PlayerConfig config)
+    }
+
+    class PlayerConfig {
+        -int instrument
+        -int octave
+        -int volume
+        -int bpm
+        -StringBuilder output
+        +void reset()
+        +void setInstrument(int midi)
+        +void changeOctave(int delta)
+        +void setBpm(int bpm)
+        +void doubleVolume()
+        +String getPattern()
+    }
+
+    class AudioEngine {
+        <<interface>>
+        +void play(String pattern)
+        +void pause()
+        +void resume()
+        +void stop()
+        +void seek(int index)
+        +Path exportMidi(String pattern, Path targetPath)
+    }
+
+    class JFuguePlayer {
+        +void play(String pattern)
+        +void pause()
+        +void resume()
+        +void stop()
+        +void seek(int index)
+        +Path exportMidi(String pattern, Path targetPath)
+    }
+
+    class TtmException {
+        -ErrorCode code
+        -String message
+        +ErrorCode getCode()
+    }
+
+    class ErrorCode {
+        <<enumeration>>
+        INVALID_INPUT
+        INVALID_CHARACTER
+        MUSIC_NOT_FOUND
+        INVALID_PLAYBACK_CONFIG
+        PERSISTENCE_FAILURE
+        AUDIO_ENGINE_FAILURE
+    }
