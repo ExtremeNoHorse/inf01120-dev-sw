@@ -1,3 +1,7 @@
+---
+config:
+  theme: default
+---
 %% TTM - Diagrama refatorado (Fase 1)
 %% Original preservado em classes/diagram.mmd.
 %%
@@ -22,6 +26,7 @@ classDiagram
 
     Player *-- Interpreter
     Player *-- AudioEngine
+    JFuguePlayer <|.. ManagedPlayer
     AudioEngine <|.. JFuguePlayer
 
     Interpreter *-- DomainMapper
@@ -65,26 +70,28 @@ classDiagram
     class Music {
         -String id
         -String name
-        -String source
+        -String content
         +String getId()
         +String getName()
         +void setName(String name)
-        +String getSource()
-        +void setSource(String source)
+        +String getContent()
+        +void setContent(String content)
         +boolean hasRecording()
     }
 
     class Player {
         -Interpreter interpreter
         -AudioEngine audioEngine
-        -Consumer~Integer~ onCharPlayed
+        -PlayerConfig playerConfig
+        %% Caso o Pimenta comente sobre eventos
+        %% -Consumer~Integer~ onCharPlayed
         +void play(Music music)
         +void pause()
         +void resume()
         +void stop()
         +void configure(PlayerConfig config)
         +Path export(Music music, Path targetPath)
-        +void onCharPlayed(Consumer~Integer~ listener)
+        %% +void onCharPlayed(Consumer~Integer~ listener)
     }
 
     class Interpreter {
@@ -119,6 +126,7 @@ classDiagram
         -int octave
         -int volume
         -int bpm
+        -int playbackPosition
         -StringBuilder output
         +void reset()
         +void setInstrument(int midi)
@@ -126,6 +134,8 @@ classDiagram
         +void setBpm(int bpm)
         +void doubleVolume()
         +String getPattern()
+        +int getPlaybackPosition()
+        +void setPlaybackPosition(int position)
     }
 
     class AudioEngine {
@@ -135,16 +145,18 @@ classDiagram
         +void resume()
         +void stop()
         +void seek(int index)
-        +Path exportMidi(String pattern, Path targetPath)
     }
 
     class JFuguePlayer {
         +void play(String pattern)
+        +ManagedPlayer getManagedPlayer()
+    }
+
+    class ManagedPlayer {
         +void pause()
         +void resume()
         +void stop()
-        +void seek(int index)
-        +Path exportMidi(String pattern, Path targetPath)
+        +void seek(long tick)
     }
 
     class TtmException {
