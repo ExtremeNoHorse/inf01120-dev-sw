@@ -101,9 +101,9 @@ classDiagram
     }
 
     class DomainMapper {
-        -Map~Character,Command~ table
-        +Command toDomain(char c)
-        +boolean supports(char c)
+        -Map~String,Command~ table
+        +Command toDomain(String c)
+        +boolean supports(String c)
     }
 
     class Command {
@@ -112,12 +112,12 @@ classDiagram
     }
 
     class Note {
-        -char cmd
+        -String cmd
         +void execute(PlayerConfig config)
     }
 
     class ConfigUpdate {
-        -char cmd
+        -String cmd
         +void execute(PlayerConfig config)
     }
 
