@@ -26,7 +26,7 @@ classDiagram
 
     Player *-- Interpreter
     Player *-- AudioEngine
-    JFuguePlayer <|.. ManagedPlayer
+    JFuguePlayer *-- ManagedPlayer
     AudioEngine <|.. JFuguePlayer
 
     Interpreter *-- DomainMapper
@@ -97,11 +97,13 @@ classDiagram
     class Interpreter {
         -DomainMapper mapper
         -PlayerConfig playerConfig
+        -StringBuilder pattern
         +String interpret(String text)
     }
 
     class DomainMapper {
         -Map~String,Command~ table
+        -List~String~ playedCommands
         +Command toDomain(String c)
         +boolean supports(String c)
     }
@@ -126,18 +128,16 @@ classDiagram
         -int octave
         -int volume
         -int bpm
-        -int playbackPosition
-        -StringBuilder output
         +void reset()
         +void setInstrument(int midi)
-        +void changeOctave(int delta)
+        +void setOctave(int octave)
         +void setBpm(int bpm)
-        +void doubleVolume()
-        +String getPattern()
-        +int getPlaybackPosition()
-        +void setPlaybackPosition(int position)
+        +void setVolume(int vol)
+        +int getInstrument()
+        +int getOctave()
+        +int getVolume()
+        +int getBpm()
     }
-
     class AudioEngine {
         <<interface>>
         +void play(String pattern)
