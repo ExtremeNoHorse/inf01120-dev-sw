@@ -11,13 +11,6 @@
 O projeto consiste em um **gerador de sequências musicais a partir de um texto de entrada**. O sistema recebe um arquivo de texto e, com base em regras de mapeamento,
 produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFugue. Os parâmetros são definidos através de um mapeamento de texto para informações musicais.
 
-## Glossário
-
-- **Música (Music):** unidade persistida no sistema; composta por id, nome e texto-fonte.
-- **Reproduzir (play):** tocar a música via JFugue interpretando o texto-fonte.
-- **Exportar (export):** gerar um arquivo a partir do texto interpretado.
-- **Playback:** estado corrente da reprodução (posição, parâmetros musicais ativos).
-
 ## Lista de Requisitos
 
 ### Lista de Requisitos Funcionais
@@ -39,7 +32,7 @@ produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFu
 
 1. **Modularidade por responsabilidade:** O código é organizado em módulos coesos alinhados ao diagrama de classes: entrada e validação (`InputValidator`), persistência (`MusicRepository` + `FileMusicRepository`), interpretação e mapeamento (`Interpreter` + `DomainMapper` + `Command`), execução de áudio (`Player` + `AudioEngine` + `JFuguePlayer`) e composição da aplicação (`App`). Interfaces isolam detalhes trocáveis (motor de áudio, meio de persistência).
 2. **Tratamento de erros centralizado:** Erros de domínio são modelados por uma única hierarquia de exceptions e códigos internos, sem stack traces vazando para a UI.
-3. **Testabilidade:** Cada módulo é coberto por testes unitários com cobertura de branches.
-4. **Padronização de estilo automática.** Google Java Format é aplicado via Spotless no pre-commit hook local e no CI. Divergência de formatação quebra o build.
-5. **Repositório GitHub + fluxo de PR.** Toda mudança na `main` passa por Pull Request. CI verde é pré-requisito de merge; revisão humana é convenção do grupo. Histórico de commits reflete o desenvolvimento progressivo.
-6. **Pipeline CI/CD.** GitHub Actions (`.github/workflows/ci.yml`) executa Spotless, Checkstyle, SpotBugs e `mvn verify` (testes JUnit + gate JaCoCo) a cada push/PR contra `main`. Relatório de cobertura publicado como artefato.
+3. **Testabilidade:** Cada módulo será coberto por testes unitários para garantir o funcionamento correto.
+4. **Padronização de estilo automática.** Usaremos ferramentas de Linters para garantir a padronização do estilo do código entre membros da equipe.
+5. **Repositório GitHub e fluxo de PR.** Toda mudança deverá passar por revisão por pares dos membros do grupo para evitar a introdução de bugs e garantir a distribuição de conhecimento do código entre a equipe.
+6. **Pipeline CI/CD.** Usaremos pipelines de CI/CD para build automático de artefatos, checar qualidade de código e evitar bad smells e executar testes que garantem integridade a cada entrega.
