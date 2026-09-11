@@ -52,16 +52,20 @@ classDiagram
 
     class MusicRepository {
         <<interface>>
-        +Music save(Music m)
+        +Music newMusic()
+        +Music save(String Name)
         +Music getById(String id)
+        +Music getByPath(Path path)
         +List~Music~ findAll()
         +void deleteById(String id)
     }
 
     class FileMusicRepository {
         -Path baseDir
-        +Music save(Music m)
+        +Music newMusic()
+        +Music save(String Name)
         +Music getById(String id)
+        +Music getByPath(Path path)
         +List~Music~ findAll()
         +void deleteById(String id)
     }
