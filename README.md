@@ -55,15 +55,19 @@ Cada princípio SOLID citado no enunciado é aplicado da seguinte forma na arqui
 ## Croquis de Interface
 
 ### Tela 1
+
 ![Tela_1.jpeg](front/Tela_1.jpeg)
 
 ### Tela 2
+
 ![Tela_2.jpeg](front/Tela_2.jpeg)
 
 ### Tela 3
+
 ![Tela_3.jpeg](front/Tela_3.jpeg)
 
 ### Tela 4
+
 ![Tela_4.png](front/Tela_4.png)
 
 O design segue uma estética de interface única, controles nativos familiares (player bar, botões `+/−`, ícone de volume), e barras laterais em todas as telas com as músicas carregadas, a área central serve para a edição, upload e reprodução de música.
