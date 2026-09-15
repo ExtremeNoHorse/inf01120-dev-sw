@@ -1,42 +1,50 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
-    <inspection_tool class="MissingOverrideAnnotation" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="UnusedImport" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="AssignmentToMethodParameter" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoreTransformationOfOriginalParameter" value="false" />
+    </inspection_tool>
+    <inspection_tool class="CallToPrintStackTrace" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="CatchGenericClass" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="ClassCanBeRecord" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="ConstantConditions" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="EmptyStatementBody" enabled="true" level="ERROR" enabled_by_default="true">
+      <option name="m_reportEmptyBlocks" value="true" />
+    </inspection_tool>
+    <inspection_tool class="EqualsWithItself" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="HardcodedFileSeparators" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_recognizeExampleMediaType" value="false" />
+    </inspection_tool>
+    <inspection_tool class="MagicNumber" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="MethodCanBeStatic" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="MethodMayBeStatic" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_onlyPrivateOrFinal" value="false" />
+      <option name="m_ignoreEmptyMethods" value="true" />
+    </inspection_tool>
+    <inspection_tool class="MissingOverrideAnnotation" enabled="true" level="ERROR" enabled_by_default="true">
+      <option name="ignoreObjectMethods" value="true" />
+      <option name="ignoreAnonymousClassMethods" value="false" />
+    </inspection_tool>
+    <inspection_tool class="ObjectEquality" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_ignoreEnums" value="true" />
+      <option name="m_ignoreClassObjects" value="true" />
+      <option name="m_ignorePrivateConstructors" value="false" />
+    </inspection_tool>
+    <inspection_tool class="OverlyBroadCatchBlock" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="RedundantIfStatement" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="StringEquality" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="TooBroadScope" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_allowConstructorAsInitializer" value="false" />
+      <option name="m_onlyLookAtBlocks" value="false" />
+    </inspection_tool>
     <inspection_tool class="UnusedDeclaration" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ADD_MAINS_TO_ENTRIES" value="true" />
       <option name="ADD_APPLET_TO_ENTRIES" value="true" />
       <option name="ADD_SERVLET_TO_ENTRIES" value="true" />
       <option name="ADD_NONJAVA_TO_ENTRIES" value="true" />
     </inspection_tool>
-    <inspection_tool class="RedundantThrows" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="RedundantCast" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="RedundantIfStatement" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="EmptyStatementBody" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="EqualsWithItself" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ObjectEquality" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="StringEquality" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="MagicNumber" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="m_ignoreInHashCode" value="true" />
-      <option name="m_ignoreInAnnotations" value="true" />
-    </inspection_tool>
-    <inspection_tool class="MethodCanBeStatic" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="MethodMayBeStatic" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="ParameterCanBeLocal" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UnnecessaryLocalVariable" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UnnecessaryReturn" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="AssignmentToMethodParameter" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="NullableProblems" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="ConstantConditions" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="ThrowablePrintStackTrace" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="CallToPrintStackTrace" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="UnusedImport" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UseOfSystemOutOrSystemErr" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="HardcodedFileSeparators" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="CatchGenericClass" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="OverlyBroadCatchBlock" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="TooBroadScope" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="ClassCanBeRecord" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="PatternVariableCanBeUsed" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="SwitchStatementWithTooFewBranches" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="unusedMerged" />
   </profile>
 </component>

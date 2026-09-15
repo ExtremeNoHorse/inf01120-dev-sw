@@ -86,15 +86,12 @@ classDiagram
         -Interpreter interpreter
         -AudioEngine audioEngine
         -PlayerConfig playerConfig
-        %% Caso o Pimenta comente sobre eventos
-        %% -Consumer~Integer~ onCharPlayed
         +void play(Music music)
         +void pause()
         +void resume()
         +void stop()
         +void configure(PlayerConfig config)
         +Path export(Music music, Path targetPath)
-        %% +void onCharPlayed(Consumer~Integer~ listener)
     }
 
     class Interpreter {
@@ -106,24 +103,25 @@ classDiagram
 
     class DomainMapper {
         -Map~String,Command~ table
-        -List~String~ playedCommands
         +Command toDomain(String c)
         +boolean supports(String c)
     }
 
     class Command {
         <<interface>>
-        +void execute(PlayerConfig config)
+        +String execute(PlayerConfig config)
     }
 
     class Note {
+        -static String VOLUME_INTENSITY_SEPARATOR
         -String cmd
-        +void execute(PlayerConfig config)
+        +String execute(PlayerConfig config)
+        -static String buildJfugueToken(String jfugueNote, PlayerConfig config)
     }
 
     class ConfigUpdate {
-        -String cmd
-        +void execute(PlayerConfig config)
+        -Function~PlayerConfig, String~ updateAction
+        +String execute(PlayerConfig config)
     }
 
     class PlayerConfig {
@@ -131,15 +129,14 @@ classDiagram
         -int octave
         -int volume
         -int bpm
-        +void reset()
-        +void setInstrument(int midi)
-        +void setOctave(int octave)
-        +void setBpm(int bpm)
-        +void setVolume(int vol)
         +int getInstrument()
+        +void setInstrument(int instrument)
         +int getOctave()
+        +void setOctave(int octave)
         +int getVolume()
+        +void setVolume(int volume)
         +int getBpm()
+        +void setBpm(int bpm)
     }
     class AudioEngine {
         <<interface>>
