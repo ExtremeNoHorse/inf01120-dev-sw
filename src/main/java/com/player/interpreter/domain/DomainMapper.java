@@ -1,8 +1,6 @@
 package com.player.interpreter.domain;
 
 import com.player.interpreter.domain.commands.Command;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,7 +12,8 @@ import java.util.Objects;
  */
 public final class DomainMapper {
   private final Map<String, Command> table;
-  private final List<String> playedCommands;
+
+  // private final List<String> playedCommands;
 
   /**
    * Constructs a new {@code DomainMapper} with the specified command mapping.
@@ -24,7 +23,7 @@ public final class DomainMapper {
    */
   public DomainMapper(final Map<String, Command> table) throws NullPointerException {
     this.table = Objects.requireNonNull(table, "Command table cannot be null");
-    this.playedCommands = new ArrayList<>();
+    // this.playedCommands = new ArrayList<>();
   }
 
   /**
