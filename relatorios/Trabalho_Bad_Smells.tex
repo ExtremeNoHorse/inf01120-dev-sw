@@ -1,0 +1,474 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{fancyhdr}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+  pdftitle={Estudo de Bad Smells e Refatoração no TTM},
+  pdfauthor={Grupo TTM -- INFO1120}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\cfoot{\thepage}
+\setlength{\headheight}{15pt}
+\setlist{noitemsep,topsep=3pt}
+
+\definecolor{codebackground}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{190,190,190}
+\definecolor{codecomment}{RGB}{90,110,90}
+\definecolor{codekeyword}{RGB}{0,70,130}
+\definecolor{codestring}{RGB}{150,55,0}
+
+\lstdefinestyle{java}{
+  language=Java,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{codekeyword}\bfseries,
+  commentstyle=\color{codecomment},
+  stringstyle=\color{codestring},
+  backgroundcolor=\color{codebackground},
+  frame=single,
+  rulecolor=\color{codeframe},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  tabsize=2,
+  captionpos=b
+}
+\lstset{style=java}
+
+\newcommand{\smell}[1]{\textit{#1}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \centering
+  {\large Universidade Federal do Rio Grande do Sul\par}
+  {\large Instituto de Informática\par}
+  \vspace{1.8cm}
+  {\large Disciplina: INFO1120 - Desenvolvimento de Software\par}
+  {\large Professor: Marcelo Soares Pimenta\par}
+  \vfill
+  {\LARGE\bfseries Estudo de Bad Smells e Refatoração\par}
+  \vfill
+  \begin{tabular}{ll}
+    André Schaidhauer Luckmann & 00601117 \tabularnewline
+    Arthur Von Groll dos Santos & 00602432 \tabularnewline
+    Carlos Eduardo Boesel Morari & 00609369 \tabularnewline
+    Giovani Ferreira de Alencoi & 00601395 \tabularnewline
+  \end{tabular}
+  \vfill
+  Porto Alegre\\
+  \today
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+
+\pagenumbering{arabic}
+
+\section{Introdução}
+
+Um \smell{bad smell} é um indicador de que a estrutura de um programa pode dificultar sua compreensão, manutenção e evolução. Não indica um defeito funcional por si só, fala mais sobre a estrutura do código no seu ciclo de vida. Dessa forma, bad smells podem requerer esforços elevados de análise do código e seu contexto antes de propor mudanças e novas funcionalidades, pois alguma das estruturas podem esconder certos fluxos, lógicas e antigas decisões arquiteturais.
+
+Para resolver \smell{bad smells}, é aplicada a ideia de refatoração visando a melhora da manutenibilidade sem alterar o comportamento observável do programa.
+
+\section{Seleção dos smells}
+
+O grupo selecionou três smells do texto-base (SMELL-1) e dois externos(SMELL-2): Feature Envy, Objetos Mutáveis, Comentários, Middle Man e Shotgun Surgery.
+
+\section{Descrição dos bad smells}
+
+\subsection{Feature Envy (SMELL-1)}
+
+O bad smell \smell{Feature Envy} trata de quando temos uma classe que tem métodos muito pouco ligados (baixa coesão) com os atributos e métodos da própria classe, e mais ligados aos métodos/atributos de outra classe. Esse bad smell pode aparecer, em um código como o exemplo abaixo:
+
+\begin{lstlisting}[caption={Feature Envy: antes da refatoração},label={lst:sphere-before}]
+public class Sphere {
+    private int radius, x, y;
+    private float surfaceArea;
+    private float volume;
+
+    public Sphere(int radius, int x, int y) {
+        this.radius = radius;
+        this.x = x;
+        this.y = y;
+        this.surfaceArea = this.calculateSurfaceArea();
+        this.volume = this.calculateVolume();
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
+    public int getRadius() {
+        return this.radius;
+    }
+
+    public float calculateSurfaceArea()
+    {
+        //...
+    }
+
+    public float calculateVolume()
+    {
+        //...
+    }
+}
+
+public class Drawer {
+    public void drawSphereWithShadow(GraphicsEngine engine, Sphere sphere) {
+
+        int startX = sphere.getX() - sphere.getRadius();
+        int startY = sphere.getY() - sphere.getRadius();
+        int size = sphere.getRadius() * 2;
+
+        int shadowX = startX + 5;
+        int shadowY = startY + 10;
+
+        engine.drawOval(shadowX, shadowY, size, size, GraphicsEngine.COLOR_GREY);
+        engine.drawOval(startX, startY, size, size, GraphicsEngine.COLOR_BLUE);
+    }
+}
+
+\end{lstlisting}
+
+No exemplo acima, podemos ver uma simples classe “Sphere”, que segue corretamente os padrões de código e dá a entender que se trata de uma esfera com raio, volume e área da superfície. Logo abaixo, temos uma classe “Drawer”, que aparenta ser uma classe responsável por desenhar uma dada esfera na tela para que o usuário possa visualizá-la.
+
+De início, percebe-se que o método usado para desenhar a esfera é o “drawSphereWithShadow”, dentro de “Drawer”. No entanto, esse método não usa nenhum atributo da classe Drawer (que, inclusive, não apresenta nenhum atributo), e faz uso de vários atributos da classe “Sphere”. Isso indica, claramente, um erro de design do código: A classe “Drawer” não tem atributos e é apenas um conjunto de métodos que tratam mais sobre as classes “GraphicsEngine” e “Sphere” e poderia ser removida. Seus comportamentos poderiam ser realocados para lugares onde fariam mais sentido com comportamento muito mais coeso, o que facilitaria manutenções futuras e acarretaria em uma melhor legibilidade do código (não seria necessário acessar várias classes para entender o comportamento). Um exemplo de refatoração que causa esses impactos é o exemplo abaixo:
+
+\begin{lstlisting}[caption={Feature Envy: comportamento movido para Sphere},label={lst:sphere-after}]
+public interface Drawable {
+    public void draw(GraphicsEngine engine);
+}
+
+public class Sphere implements Drawable {
+    private int radius, x, y;
+    private float surfaceArea;
+    private float volume;
+
+    public Sphere(int radius, int x, int y) {
+        this.radius = radius;
+        this.x = x;
+        this.y = y;
+        this.surfaceArea = this.calculateSurfaceArea();
+        this.volume = this.calculateVolume();
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
+    public int getRadius() {
+        return this.radius;
+    }
+
+    public float calculateSurfaceArea()
+    {
+        //...
+    }
+
+    public float calculateVolume()
+    {
+        //...
+    }
+
+    @Override
+    public void draw(GraphicsEngine engine) {
+        int startX = this.getX() - this.getRadius();
+        int startY = this.getY() - this.getRadius();
+        int size = this.getRadius() * 2;
+
+        int shadowX = startX + 5;
+        int shadowY = startY + 10;
+
+        engine.drawOval(shadowX, shadowY, size, size, GraphicsEngine.COLOR_GREY);
+        engine.drawOval(startX, startY, size, size, GraphicsEngine.COLOR_BLUE);
+    }
+}
+
+\end{lstlisting}
+
+Nesse caso, foi criada uma interface “Drawable”, que, de certa forma, toma o lugar da classe “Drawer”, mas permite passar a responsabilidade para dentro da classe “Sphere”. Isso permite que “Sphere” tenha uma coesão muito maior (ela tem acesso a todas as informações da própria esfera e tudo que é necessário para desenhá-la). Isso facilita a questão de legibilidade (tudo necessário para entender o que o método faz está na própria classe, não é necessário vagar por múltiplos arquivos diferentes) e a manutenção pode ser toda realizada ali (escopo de modificação pequeno). Além disso, essa refatoração também aplica o princípio “Tell, Don't Ask”: em vez da classe externa ficar 'perguntando' pelos dados da esfera para tomar decisões, nós simplesmente “dizemos” à esfera para se desenhar, já que ela é a detentora de todas as informações necessárias para isso. Outra questão que é interessante de analizar nesse caso é que o método draw fica acoplado à \textbf{GraphicsEngine}, que poderia ser eliminado se invertessemos a dependência e fizessemos com que \textbf{GraphicsEngine} recebesse um objeto desenhável com todas as instruções de como se desenha o objeto, e a engine somente iria desenhar na tela os comandos recebidos. Porém, como a didática deste exemplo foca na resolução do smell \smell{Feature Envy}, resolvemos manter essa implementação, mas estamos cientes das alternativas.
+
+
+\subsection{Objetos Mutáveis (SMELL-1)}
+
+O bad smell \smell{Objetos Mutáveis} ocorre quando um objeto permite ser modificado após ser criado. O principal problema dessa prática é que compartilhar o objeto entre métodos gera o risco de ele ser modificado inesperadamente no fluxo do código.
+
+Uma forma de reduzir esse risco é criar objetos imutáveis, cujo estado não muda após a construção. Em Java, a palavra reservada \texttt{final} impede a reatribuição de um objeto ou campo, mas não torna um objeto imutável por si só. Para isso, a classe não deve expor métodos que alterem seu estado; seus campos devem ser privados e finais; e referências a objetos mutáveis devem ser copiadas defensivamente ou substituídas por tipos imutáveis. Quando for necessário representar uma alteração, cria-se uma nova instância com o estado desejado. Veja o seguinte exemplo:
+
+\begin{lstlisting}[caption={Antes: objeto mutável compartilhado},label={lst:mutable-before}]
+public class Agendamento {
+  private LocalDate data;
+
+  public Agendamento(final LocalDate data) {
+    this.data = data;
+  }
+
+  public void adiar(final long dias) {
+    this.data = this.data.addDays(dias);
+  }
+
+  public LocalDate getData() {
+    return this.data;
+  }
+}
+\end{lstlisting}
+
+Se o mesmo \texttt{Agendamento} for compartilhado por outros objetos, uma chamada a \texttt{adiar()} altera o estado observado por todos os seus clientes, o que pode ser uma alteração indesejada no fluxo do código. Abaixo, temos um exemplo que preserva o objeto original e devolve uma nova versão.
+
+\begin{lstlisting}[caption={Depois: objeto imutável},label={lst:mutable-after}]
+public final class Agendamento {
+  private final LocalDate data;
+
+  public Agendamento(final LocalDate data) {
+    this.data = data;
+  }
+
+  public Agendamento adiado(final long dias) {
+    return new Agendamento(this.data.plusDays(dias));
+  }
+
+  public LocalDate getData() {
+    return this.data;
+  }
+}
+\end{lstlisting}
+
+Neste caso, \texttt{LocalDate} também é imutável. Se o campo fosse uma referência mutável, como \texttt{java.util.Date} ou uma lista, a classe precisaria copiar o valor no construtor e no método de acesso para não expor seu estado interno. Em resumo, ao usar objetos mutáveis, deve-se analizar se eles realmente foram projetados para serem mutáveis, e que sua mutabilidade é controlada adequadamente pelo programa. Caso exista a possibilidade de algum objetos ser alterado indevidamente, deve-se utilizar recursos para torná-lo imutável e eliminar imprevisibilidades no software.
+
+
+\subsection{Comentários (SMELL-1)}
+
+Comentários são um ótimo recurso para explicar o código para seres humano, porém, podem se tornar \smell{bad smells} quando utilizados para compensar um código pouco expressivo. É interessante que o programador reflita sobre como tornar o trecho de código mais legível para que ele seja auto documentável. Dessa forma, os comentários presentes no código determinam nomenclaturas ou informações que o código por si só não explica diretamente, além de poupar a escrita de linhas de comentários que o próprio código poderia explicar.
+
+\begin{lstlisting}[language=Python,caption={Comentário que encobre código pouco expressivo},label={lst:comments-before}]
+x = 6  # nota da primeira prova
+y = 8  # nota da segunda prova
+z = 9  # nota da terceira prova
+m = (x + y + z) / 3  # media das notas do semestre
+\end{lstlisting}
+
+Neste trecho de código não é possível identificar o que está sendo calculado propriamente pelo código em si, por conta da falta de nomes significativos. Para suprir essa deficiência o programador inseriu comentários para explicar o fluxo, gerando um \smell{comment smell}, dado que os comentários não se fariam necessários se os nomes escolhidos para as variáveis fossem mais expressivos. Lembrando que comentários são muito importantes para registrar alguma regra de negócio, intenção ou motivo de decisão que o código não explica por si só, porém sempre que for possível melhorar a legibilidade do código de forma que evite comentários redundantes, melhor. Já dizia o Uncle Bob que código limpo deveria soar que nem uma boa prosa escrita: seguir uma lógica estruturada que conta uma história.
+
+\begin{lstlisting}[language=Python,caption={Nomes que tornam o comentário desnecessário},label={lst:comments-after}]
+nota_prova_1 = 6
+nota_prova_2 = 8
+nota_prova_3 = 9
+media_semestral = (nota_prova_1 + nota_prova_2 + nota_prova_3) / 3
+\end{lstlisting}
+
+
+A correção de \smell{comment smell} pode envolver múltiplas técnicas de refactoring, dado que um \smell{comment smell} pode derivar de diversos tipos de erros de programação. No exemplo acima, aplicar nomes significativos às variáveis foi suficiente. Mas poderia requerer diferentes técnicas de Refactoring, como mudança de estruturas ou até do fluxo do código que pode ser simplificado.
+
+\subsection{Shotgun Surgery (SMELL-2)}
+
+O \smell{Bad Smell Shotgun Surgery} acontece quando uma mudança é feita em alguma lógica e requer pequenas alterações em diferentes classes do código que usavam aquela funcionalidade. Esse problema indica que uma única responsabilidade é distribuída entre um grande número de classes. Isso pode acontecer quando muitas mudanças são feitas em uma única classe e acarreta em mudanças no seu uso pelos clientes.
+
+\section{Refatoração de Shotgun Surgery}
+\begin{itemize}
+    \item Usar o “Move Method” ou “Move Field” para mover comportamentos repetidos em uma classe única. Se não há classe apropriada para isso, deve-se criar uma nova.
+    \item Se ao mover o código redundante para uma mesma classe as classes originais ficarem quase vazias, pode-se tentar refatorar as classes redundantes com o “Inline Class”.
+    \item \textbf{Vantagens}: Melhor Organização, menos código duplicado e manutenção fica mais fácil.
+
+\end{itemize}
+\begin{lstlisting}[caption={Regra de acesso espalhada},label={lst:shotgun-before}]
+public class ContentService {
+  public void streamMovie(final User user) {
+    if (!user.isActive() || !"PREMIUM".equals(user.getSubscriptionTier())) {
+      throw new SecurityException("Acesso negado.");
+    }
+  }
+}
+
+public class DownloadController {
+  public ResponseEntity<String> downloadFile(final User user) {
+    if (!user.isActive() || !"PREMIUM".equals(user.getSubscriptionTier())) {
+      return ResponseEntity.status(403).body("Apenas para usuarios Premium.");
+    }
+    return ResponseEntity.ok("Iniciando download...");
+  }
+}
+\end{lstlisting}
+
+Neste caso, se um novo plano além de PREMIUM que der acesso a esses recursos (streamMovie e downloadFile) for criado, todos os arquivos que contém essa validação inline terão que ser modificados. De certa forma, o Shotgun Surgery remete muito a código duplicado e não centralizado.
+
+Uma proposta de refatoração que resolveria esse problema é modificar a classe de usuário para se responsabilizar por essas validações utilizadas em vários trechos de código, e depois replicar o método que valida isso nos lugares necessários:
+
+\begin{lstlisting}[caption={Regra de acesso concentrada em User},label={lst:shotgun-after}]
+public class User {
+  private boolean active;
+  private String subscriptionTier;
+
+  public boolean hasPremiumAccess() {
+    return this.active && ("PREMIUM".equals(this.subscriptionTier)|| "VIP".equals(this.subscriptionTier));
+  }
+}
+
+public class ContentService {
+  public void streamMovie(final User user) {
+    if (!user.hasPremiumAccess()) {
+      throw new SecurityException("Acesso negado.");
+    }
+  }
+}
+
+public class DownloadController {
+  public ResponseEntity<String> downloadFile(final User user) {
+    if (!user.hasPremiumAccess()) {
+      return ResponseEntity.status(403).body("Apenas para usuarios Premium.");
+    }
+    return ResponseEntity.ok("Iniciando download...");
+  }
+}
+\end{lstlisting}
+
+\subsection{Middle Man (SMELL-2)}
+
+O Code Smell \smell{Middle Man} indica classes cuja única função é repassar trabalho para outra classe. Antes de remover essa camada, é necessário avaliar se ela possui uma responsabilidade que justifique sua existência. O problema pode surgir em cadeias de mensagens, por exemplo, quando clientes precisam navegar pela estrutura de objetos, ou após uma migração gradual de responsabilidades que deixa uma classe apenas delegando chamadas. Para resolver esse \smell{smell} podemos usar o refactoring \textit{Remove Middle Man}, que consiste nos seguintes termos:
+
+\begin{itemize}
+  \item \textbf{Servidor}: objeto ao qual o cliente tem acesso direto.
+  \item \textbf{Delegado}: objeto final que contém a funcionalidade solicitada.
+\end{itemize}
+
+Dois problemas aparecem com frequência:
+\begin{enumerate}
+  \item A classe servidora não faz mais do que chamar o delegado e cria complexidade desnecessária.
+  \item Cada nova funcionalidade do delegado exige mais um método de delegação no servidor.
+\end{enumerate}
+
+A refatoração consiste em fornecer acesso ao delegado e trocar chamadas que passam pelo servidor por chamadas diretas ao objeto que executa a funcionalidade. Isso reduz código repetitivo e deixa o acesso mais direto aos métodos alvo. No entanto,  deve-se ponderar e argumentar esse refactoring quando a camada evita uma dependência inadequada, como nos padrões Proxy, Decorator ou Adapter. Veja a Figura 1.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{middleman.png}
+    \caption{Refactoring do Middle Man}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsubsection{Caso analisado no projeto da disciplina}
+
+Em determinado momento do desenvolvimento, tinhamos a classe \texttt{Player} definida da seguinte maneira: os métodos \texttt{pause}, \texttt{resume}, \texttt{stop} e \texttt{seek} apenas delegavam chamadas para \texttt{AudioEngine}.
+
+\begin{lstlisting}[caption={Player antes da análise do Middle Man},label={lst:player-before}]
+public final class Player {
+  private final Interpreter interpreter;
+  private final AudioEngine audioEngine;
+  private final PlayerConfig playerConfig;
+
+  public Player(final Interpreter interpreter, final AudioEngine audioEngine, final PlayerConfig playerConfig) {
+    this.interpreter = interpreter;
+    this.audioEngine = audioEngine;
+    this.playerConfig = playerConfig;
+  }
+
+  public void play(final Music music) {
+    final String musicText = this.interpreter.interpret(music.getContent());
+    this.audioEngine.play(musicText);
+  }
+
+  public void pause() { this.audioEngine.pause(); }
+  public void resume() { this.audioEngine.resume(); }
+  public void stop() { this.audioEngine.stop(); }
+  public void seek(final int index) { this.audioEngine.seek(index); }
+}
+\end{lstlisting}
+
+Uma alternativa seria tornar \texttt{audioEngine} público, remover os métodos delegados e fazer os clientes chamarem o mecanismo de áudio diretamente, como na Listagem~\ref{lst:player-after}.
+
+\begin{lstlisting}[caption={Alternativa de remoção do Middle Man},label={lst:player-after}]
+public final class Player {
+  private final Interpreter interpreter;
+  public final AudioEngine audioEngine;
+  private final PlayerConfig playerConfig;
+
+  public void play(final Music music) {
+    final String musicText = this.interpreter.interpret(music.getContent());
+    this.audioEngine.play(musicText);
+  }
+}
+
+// Chamadas de Callers.
+// Antes: this.player.resume();
+// Depois: this.player.audioEngine.resume();
+\end{lstlisting}
+
+Essa alternativa elimina métodos, mas expõe uma responsabilidade interna do \texttt{Player}. O caller passa a ter liberdade para manipular a engine de áudio sem as regras aplicadas pela classe. Assim, priorizamos a integridade e a separação de responsabilidades em vez de reduzir algumas delegações.
+
+Em um nível abaixo, \texttt{JFuguePlayer} também delega para \texttt{ManagedPlayer}, como mostra a Listagem~\ref{lst:jfugue-middleman}.
+
+\begin{lstlisting}[caption={Delegação mantida em JFuguePlayer},label={lst:jfugue-middleman}]
+public final class JFuguePlayer implements AudioEngine {
+  private final ManagedPlayer managedPlayer;
+
+  @Override
+  public void pause() { this.managedPlayer.pause(); }
+
+  @Override
+  public void resume() { this.managedPlayer.resume(); }
+
+  @Override
+  public void stop() { this.managedPlayer.reset(); }
+
+  @Override
+  public void seek(final int index) {
+    this.managedPlayer.seek(index);
+  }
+}
+\end{lstlisting}
+
+Aqui também decidimos manter essa abstração porque \texttt{ManagedPlayer} pertence à biblioteca JFugue. A interface \texttt{AudioEngine} mantém a aplicação independente desse mecanismo. Se trocassemos JFugue por outra engine, como jMusic ou LeSound, os callers não precisam conhecer a nova API. Nesse contexto, a delegação atua como Adapter e evita que a remoção de um Middle Man crie um Shotgun Surgery. Porém caso tenhamos definido que todo o trabalho gira em torno de JFugue e nunca iremos poderiamos remover esse middle man e usar a biblioteca diretamente. Porém, desta vez, prezamos pela modularidade e ter um projeto agnóstico de AudioEngine.
+
+\section{Discussão}
+
+Diante das discussões do grupo, entendemos que ao escrever código, precisamos pensar sempre no contexto do código, assim das pessoas que irão ler, modificar e incrementar esse código posteriormente, de forma que as decisões de design que tomamos sejam positivas para a maior parte dos aspectos sempre que possível. Nos nossos exemplos do código do Trabalho Prático, ponderamos a eliminação do possível \smell{Middle Man}, mas nesse caso identificamos que era importante ter uma separação agnóstica da ferramenta que usamos e também da separação de responsabilidades entre classes. Como é um projeto que dificilmente terá a AudioEngine alterada do JFugue, poderíamos lidar diretamente com ele e não com a Interface de AudioEngine sem problemas, mas como o objetivo da matéria é pensar em software de qualidade, modular e manutenível, prezamos por essas características em nossas decisões. Além disso, tivemos poucos \smell{Bad Smells} até então, muito foi devido ao uso de Linters e ferramentas de análise estática de código como o SonarQube(versão gratuita) que nos alertam possíveis \smell{smells} no processo de desenvolvimento. Também, devido a pipeline no github, rejeitamos alterações de código que introduzem alguns \smell{Code Smells} na base de código, então é uma validação de qualidade a mais que nos tem ajudado a evitar problemas de \smell{Code Smells}.
+
+
+
+\section{Conclusão}
+
+Bad smells orientam a análise de padrões de código, mas não substituem a avaliação do contexto. Como muitas coisas em desenvolvimento de software, estamos falando de Tradeoffs, é importante avaliar o motivo de cada problema ser considerado um \smell{Bad Smell} e pensar na evolução do seu software. Assim, é importante tomar conhecimento de determinados padrões para facilitar o ciclo de desenvolvimento de software de qualidade que permita fácil compreensão e modificação.
+
+\begin{thebibliography}{9}
+\bibitem{valente}
+VALENTE, Marco Tulio. \textit{Engenharia de Software Moderna}. Capítulo 9: Refactoring. Disponível em: \url{https://engsoftmoderna.info/cap9.html}. Acesso em: 4 out. 2026.
+\bibitem{fowler}
+FOWLER, Martin. \textit{Refactoring: Improving the Design of Existing Code}. 2. ed. Boston: Addison-Wesley, 2018.
+\bibitem{refactoringguru-middleman}
+REFACTORING.GURU. \textit{Middle Man}. Disponível em: \url{https://refactoring.guru/smells/middle-man}. Acesso em: 4 out. 2026.
+\bibitem{refactoringguru-shotgun}
+REFACTORING.GURU. \textit{Shotgun Surgery}. Disponível em: \url{https://refactoring.guru/smells/shotgun-surgery}. Acesso em: 4 out. 2026.
+\end{thebibliography}
+
+\end{document}
