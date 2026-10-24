@@ -1,5 +1,7 @@
 package com.player.audio;
 
+import com.player.exception.ErrorCode;
+import com.player.exception.TtmException;
 import java.util.Objects;
 import org.jfugue.pattern.Pattern;
 import org.jfugue.player.ManagedPlayer;
@@ -27,36 +29,61 @@ public final class JFuguePlayer implements AudioEngine {
 
   @Override
   public void play(final String pattern) {
-    if (pattern == null || pattern.trim().isEmpty()) {
-      return;
+    try {
+      if (pattern == null || pattern.trim().isEmpty()) {
+        return;
+      }
+      final Pattern jfuguePattern = new Pattern(pattern);
+      new Thread(() -> jfuguePlayer.play(jfuguePattern)).start();
+    } catch (final NullPointerException ex) {
+      throw new TtmException(
+          ErrorCode.AUDIO_ENGINE_FAILURE, "Environment does not have an Audio Device", ex);
     }
-    final Pattern jfuguePattern = new Pattern(pattern);
-    new Thread(() -> jfuguePlayer.play(jfuguePattern)).start();
   }
 
   @Override
   public void pause() {
-    if (managedPlayer.isPlaying()) {
-      managedPlayer.pause();
+    try {
+      if (managedPlayer.isPlaying()) {
+        managedPlayer.pause();
+      }
+    } catch (final NullPointerException ex) {
+      throw new TtmException(
+          ErrorCode.AUDIO_ENGINE_FAILURE, "Environment does not have an Audio Device", ex);
     }
   }
 
   @Override
   public void resume() {
-    if (managedPlayer.isPaused()) {
-      managedPlayer.resume();
+    try {
+      if (managedPlayer.isPaused()) {
+        managedPlayer.resume();
+      }
+    } catch (final NullPointerException ex) {
+      throw new TtmException(
+          ErrorCode.AUDIO_ENGINE_FAILURE, "Environment does not have an Audio Device", ex);
     }
   }
 
   @Override
   public void stop() {
-    managedPlayer.finish();
-    managedPlayer.reset();
+    try {
+      managedPlayer.finish();
+      managedPlayer.reset();
+    } catch (final NullPointerException ex) {
+      throw new TtmException(
+          ErrorCode.AUDIO_ENGINE_FAILURE, "Environment does not have an Audio Device", ex);
+    }
   }
 
   @Override
   public void seek(final int index) {
-    managedPlayer.seek((long) index);
+    try {
+      managedPlayer.seek((long) index);
+    } catch (final NullPointerException ex) {
+      throw new TtmException(
+          ErrorCode.AUDIO_ENGINE_FAILURE, "Environment does not have an Audio Device", ex);
+    }
   }
 
   /**

@@ -1,9 +1,9 @@
 package com.player.audio;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import com.player.exception.ErrorCode;
+import com.player.exception.TtmException;
 import org.junit.jupiter.api.Test;
 
 class JFuguePlayerTest {
@@ -31,9 +31,25 @@ class JFuguePlayerTest {
     // When & Then
     assertDoesNotThrow(() -> player.play(null));
     assertDoesNotThrow(() -> player.play(""));
-    assertDoesNotThrow(player::pause);
-    assertDoesNotThrow(player::resume);
-    assertDoesNotThrow(player::stop);
-    assertDoesNotThrow(() -> player.seek(0));
+
+    TtmException exception = assertThrows(TtmException.class, player::pause);
+    assertEquals(ErrorCode.AUDIO_ENGINE_FAILURE, exception.getCode());
+    assertEquals("Environment does not have an Audio Device", exception.getMessage());
+    assertInstanceOf(NullPointerException.class, exception.getCause());
+
+    exception = assertThrows(TtmException.class, player::resume);
+    assertEquals(ErrorCode.AUDIO_ENGINE_FAILURE, exception.getCode());
+    assertEquals("Environment does not have an Audio Device", exception.getMessage());
+    assertInstanceOf(NullPointerException.class, exception.getCause());
+
+    exception = assertThrows(TtmException.class, player::stop);
+    assertEquals(ErrorCode.AUDIO_ENGINE_FAILURE, exception.getCode());
+    assertEquals("Environment does not have an Audio Device", exception.getMessage());
+    assertInstanceOf(NullPointerException.class, exception.getCause());
+
+    exception = assertThrows(TtmException.class, () -> player.seek(0));
+    assertEquals(ErrorCode.AUDIO_ENGINE_FAILURE, exception.getCode());
+    assertEquals("Environment does not have an Audio Device", exception.getMessage());
+    assertInstanceOf(NullPointerException.class, exception.getCause());
   }
 }
