@@ -12,6 +12,7 @@ class PlayerConfigTest {
   private static final int TEST_OCTAVE_3 = 3;
   private static final int TEST_OCTAVE_7 = 7;
 
+  private static final int TEST_VOL_100 = 100;
   private static final int TEST_VOL_80 = 80;
   private static final int TEST_VOL_60 = 60;
   private static final int TEST_VOL_40 = 40;
@@ -61,7 +62,7 @@ class PlayerConfigTest {
   }
 
   @Test
-  void givenVoiceIndex_whenForVoice_thenConfiguresAccordingToPhase2Specs() {
+  void givenVoiceIndex_whenForVoice_thenConfiguresAccordingToSpecs() {
     // Given & When
     final PlayerConfig v0 = PlayerConfig.forVoice(0, TEST_BPM_120);
     final PlayerConfig v1 = PlayerConfig.forVoice(1, TEST_BPM_120);
@@ -71,7 +72,7 @@ class PlayerConfigTest {
 
     // Then
     assertEquals(TEST_OCTAVE_6, v0.getOctave());
-    assertEquals(100, v0.getVolume());
+    assertEquals(TEST_VOL_100, v0.getVolume());
     assertEquals(PlayerConfig.INSTRUMENT_HARPSICHORD, v0.getInstrument());
 
     assertEquals(TEST_OCTAVE_5, v1.getOctave());
@@ -87,7 +88,7 @@ class PlayerConfigTest {
     assertEquals(PlayerConfig.INSTRUMENT_BASSOON, v3.getInstrument());
 
     assertEquals(TEST_OCTAVE_6, v4.getOctave());
-    assertEquals(100, v4.getVolume());
+    assertEquals(TEST_VOL_100, v4.getVolume());
     assertEquals(PlayerConfig.INSTRUMENT_HARPSICHORD, v4.getInstrument());
   }
 

@@ -10,11 +10,8 @@ class JFuguePlayerTest {
 
   @Test
   void givenNullPlayer_whenConstructed_thenThrowsNullPointerException() {
-    // Given
-    final org.jfugue.player.Player nullPlayer = null;
-
-    // When & Then
-    assertThrows(NullPointerException.class, () -> new JFuguePlayer(nullPlayer));
+    // Given & When & Then
+    assertThrows(NullPointerException.class, () -> new JFuguePlayer(null));
   }
 
   @Test
@@ -34,9 +31,9 @@ class JFuguePlayerTest {
     // When & Then
     assertDoesNotThrow(() -> player.play(null));
     assertDoesNotThrow(() -> player.play(""));
-    assertDoesNotThrow(() -> player.pause());
-    assertDoesNotThrow(() -> player.resume());
-    assertDoesNotThrow(() -> player.stop());
+    assertDoesNotThrow(player::pause);
+    assertDoesNotThrow(player::resume);
+    assertDoesNotThrow(player::stop);
     assertDoesNotThrow(() -> player.seek(0));
   }
 }

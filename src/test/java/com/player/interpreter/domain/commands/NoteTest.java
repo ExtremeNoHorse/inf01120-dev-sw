@@ -12,12 +12,9 @@ class NoteTest {
 
   @Test
   void givenNullCommand_whenConstructed_thenThrowsNullPointerException() {
-    // Given
-    final String nullCmd = null;
-
-    // When & Then
-    assertThrows(NullPointerException.class, () -> new Note(nullCmd));
-    assertThrows(NullPointerException.class, () -> new Note(nullCmd, MusicalDuration.QUARTER_NOTE));
+    // Given, When & Then
+    assertThrows(NullPointerException.class, () -> new Note(null));
+    assertThrows(NullPointerException.class, () -> new Note(null, MusicalDuration.QUARTER_NOTE));
   }
 
   @Test
