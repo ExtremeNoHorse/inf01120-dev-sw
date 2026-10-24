@@ -38,6 +38,15 @@ produzirÃ¡ uma sequÃªncia de notas musicais que poderÃ¡ ser reproduzida pelo JFu
 5. **RepositÃ³rio GitHub e fluxo de PR.** Toda mudanÃ§a deverÃ¡ passar por revisÃ£o por pares dos membros do grupo para evitar a introduÃ§Ã£o de bugs e garantir a distribuiÃ§Ã£o de conhecimento do cÃ³digo entre a equipe.
 6. **Pipeline CI/CD.** Usaremos pipelines de CI/CD para build automÃ¡tico de artefatos, checar qualidade de cÃ³digo e evitar bad smells e executar testes que garantem integridade a cada entrega.
 
+
+## Documentação Técnica (Fase 2)
+
+A documentação detalhada da Fase 2 está organizada na pasta [docs/](docs/):
+- [**Documentação de Implementação da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudanças, pacotes, classes, CLI e qualidade.
+- [**Arquitetura e Princípios SOLID**](docs/ARQUITETURA.md): visão de camadas, padrões de projeto e prevenção de bad smells.
+- [**Mapa de Comandos**](docs/MAPA_DE_COMANDOS.md): tabela de referência para notas, acidentes, durações, polifonia e parâmetros.
+- [**Diagrama de Classes Mermaid**](design/diagram.mmd): modelo estrutural completo e atualizado.
+
 ## Diagrama de Classes
 
 ![img.png](img.png)
