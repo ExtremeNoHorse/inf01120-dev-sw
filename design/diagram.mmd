@@ -5,7 +5,7 @@ config:
 %% TTM - Diagrama de Classes Atualizado (Fase 2)
 %%
 %% Evolucoes da Fase 2 incorporadas:
-%%   1. Suporte a polifonia (linhas como vozes V0-V3) com oitava, volume e instrumento base em PlayerConfig.
+%%   1. Suporte a polifonia (linhas como vozes V0, V1, V2...) com ciclo de parâmetros base a cada quatro vozes.
 %%   2. MusicalDuration enum para representacao das 7 figuras de duracao (semibreve a semifusa).
 %%   3. Note evoluida com suporte a acidentes (#, b) e duracoes explicitas.
 %%   4. DomainMapper com fabrica createDefault() e suporte a tokens estruturados de nota.
@@ -41,7 +41,7 @@ classDiagram
         -InputValidator validator
         -MusicRepository repository
         -Player player
-        +static void main(String[] args)
+        ~static void main(String[] args)
         +int run(String[] args)
     }
 
@@ -189,7 +189,7 @@ classDiagram
     }
 
     class JFuguePlayer {
-        -Player jfuguePlayer
+        -Player player
         -ManagedPlayer managedPlayer
         +void play(String pattern)
         +void pause()
@@ -201,7 +201,8 @@ classDiagram
     class ManagedPlayer {
         +void pause()
         +void resume()
-        +void stop()
+        +void finish()
+        +void reset()
         +void seek(long tick)
         +boolean isPlaying()
         +boolean isPaused()
@@ -209,7 +210,6 @@ classDiagram
 
     class TtmException {
         -ErrorCode code
-        -String message
         +ErrorCode getCode()
     }
 
@@ -220,5 +220,5 @@ classDiagram
         MUSIC_NOT_FOUND
         INVALID_PLAYBACK_CONFIG
         PERSISTENCE_FAILURE
-        AUDIO_ENGINE_FAILURE
+        AUDIO_UNAVAILABLE
     }

@@ -31,8 +31,8 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 
 ### MUDANÇA 4 — Novo Mapeamento e Polifonia
 - **Polifonia (Linhas como Vozes)**:
-  - Cada linha do texto representa uma voz independente (`V0`, `V1`, `V2`, `V3`), tocadas simultaneamente.
-  - A partir da 4ª voz (linha 5 em diante), o ciclo de configurações base se repete.
+  - Cada linha do texto representa uma voz independente, com índice crescente (`V0`, `V1`, `V2`, ...), tocadas simultaneamente.
+  - A partir da 5ª linha, o ciclo de configurações base se repete; os índices das vozes continuam crescendo (`V4`, `V5`, ...).
 - **Configuração Base por Voz**:
   | Voz | Registro | Instrumento Base | Oitava Base | Volume Base |
   |-----|----------|-------------------|-------------|-------------|
@@ -106,9 +106,9 @@ src/main/java/com/player/
 
 ---
 
-## 3. Uso via Linha de Comando (CLI)
+## 3. Uso planejado via Linha de Comando (CLI)
 
-A classe `App` fornece uma interface de execução para as operações da Fase 2:
+A classe `App` contém o esqueleto da interface de execução para as operações da Fase 2. A CLI ainda está em desenvolvimento e os comandos abaixo não devem ser tratados como uma distribuição executável pronta:
 
 ### Reprodução de arquivo
 ```bash
@@ -131,8 +131,8 @@ mvn verify
 ```
 
 O comando executa:
-1. **Compilação e Testes Unitários**: 61 testes cobrindo todas as classes do sistema.
+1. **Compilação e Testes Unitários**: a suíte atual possui 91 testes, todos aprovados na última verificação.
 2. **Spotless**: Validação de formatação segundo o *Google Java Format*.
 3. **Checkstyle**: Verificação semântica estrita (`checkstyle.xml`).
 4. **SpotBugs**: Detecção de bugs de bytecode em nível máximo de esforço (`Max`).
-5. **JaCoCo**: Cobertura de linhas superior a 90% (métrica real: 93.08%).
+5. **JaCoCo**: o piso configurado é de 90%; a última verificação registrou 91,53% de cobertura de linhas (432 de 472 linhas).

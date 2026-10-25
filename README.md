@@ -13,11 +13,13 @@ produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFu
 
 ## Lista de Requisitos
 
-### Lista de Requisitos Funcionais
+### Lista de Requisitos Funcionais Planejados
+
+> Os itens abaixo descrevem o escopo da solução. A implementação atual ainda está em desenvolvimento; o código disponível hoje contém um esqueleto de CLI, sem a interface gráfica dos croquis.
 
 1. Ao iniciar, o sistema exibe a lista de músicas salvas ("Minhas músicas") e permite criar uma nova música a partir do upload de um arquivo `.txt` ou da digitação/colagem direta em um campo de texto na interface.
 2. O sistema interpreta o texto-fonte **caractere por caractere**, aplicando a seguinte tabela de mapeamento:
-![](mapeamentoimage.png)
+A tabela completa está em [Mapa de Comandos](docs/MAPA_DE_COMANDOS.md).
 3. O usuário pode selecionar uma música da lista para reproduzi-la.
 4. O usuário pode controlar o playback ao vivo: play, pause, resume, stop e navegar pela música.
 5. O usuário pode configurar parâmetros musicais da reprodução: BPM, oitava, volume e instrumento inicial.
@@ -39,33 +41,35 @@ produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFu
 6. **Pipeline CI/CD.** Usaremos pipelines de CI/CD para build automático de artefatos, checar qualidade de código e evitar bad smells e executar testes que garantem integridade a cada entrega.
 
 
-## Documenta��o T�cnica (Fase 2)
+## Documentação Técnica (Fase 2)
 
-A documenta��o detalhada da Fase 2 est� organizada na pasta [docs/](docs/):
-- [**Documenta��o de Implementa��o da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudan�as, pacotes, classes, CLI e qualidade.
-- [**Arquitetura e Princ�pios SOLID**](docs/ARQUITETURA.md): vis�o de camadas, padr�es de projeto e preven��o de bad smells.
-- [**Mapa de Comandos**](docs/MAPA_DE_COMANDOS.md): tabela de refer�ncia para notas, acidentes, dura��es, polifonia e par�metros.
+A documentação detalhada da Fase 2 está organizada na pasta [docs/](docs/):
+- [**Documentação de Implementação da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudanças, pacotes, classes, CLI planejada e qualidade.
+- [**Arquitetura e Princípios SOLID**](docs/ARQUITETURA.md): visão de camadas, padrões de projeto e prevenção de bad smells.
+- [**Mapa de Comandos**](docs/MAPA_DE_COMANDOS.md): tabela de referência para notas, acidentes, durações, polifonia e parâmetros.
 - [**Diagrama de Classes Mermaid**](design/diagram.mmd): modelo estrutural completo e atualizado.
 
-## Diagrama de Classes
+## Diagrama de Classes (fonte Mermaid)
 
-![img.png](img.png)
+O diagrama editável está em [design/diagram.mmd](design/diagram.mmd).
 
 ### Princípios SOLID
 
 Cada princípio SOLID citado no enunciado é aplicado da seguinte forma na arquitetura do programa:
 
-- **S - Single Responsability:** Cada classe tem uma única responsabilidade para mudar. `Interpreter` só interpreta arquivos de texto para Patterns do JFugue; `Player` gerencia a s ações relacionadas a tocar uma música; `DomainMapper` mapeia os valores de entrada para comandos a serem executados; `FileMusicRepository` gerencia o sistema de repositório de músicas em sistema de arquivos; `AudioEngine` se encarrega de emitir os sons tocados pelo player. Uma mudança em uma dessas classes não deve afetar o funcionamento das outras.
+- **S - Single Responsibility:** Cada classe tem uma única responsabilidade para mudar. `Interpreter` só interpreta arquivos de texto para Patterns do JFugue; `Player` gerencia as ações relacionadas a tocar uma música; `DomainMapper` mapeia os valores de entrada para comandos a serem executados; `FileMusicRepository` gerencia o sistema de repositório de músicas em sistema de arquivos; `AudioEngine` se encarrega de emitir os sons tocados pelo player. Uma mudança em uma dessas classes não deve afetar o funcionamento das outras.
 - **O - Open/Closed:** Novas regras de mapeamento são adicionadas criando uma nova implementação de `Command` e registrando-a no `DomainMapper.table`, **sem modificar** `Interpreter` nem `Player`. Novos formatos de saída são adicionados implementando `AudioEngine`, sem tocar no domínio. Novas regras de validação são adicionadas a lista do `InputValidator`.
 - **L - Substituição de Liskov:** `Interpreter` opera sobre `Command.execute(PlayerConfig)` sem saber se o `Command` é `Note` ou `ConfigUpdate`. Toda `AudioEngine` é substituível: `JFuguePlayer` pode ser trocada por implementação mock em testes sem alterar `Player`.
 - **I - Segregação de Interfaces:** Interfaces são pequenas e específicas: `Command` (um método), `MusicRepository` (CRUD focado em `Music`), `AudioEngine` (contrato de playback). Nenhuma classe é forçada a implementar métodos que não usa.
 - **D - Inversão de Dependência:** `App` e `Player` dependem das abstrações `MusicRepository` e `AudioEngine`, não das classes concretas `FileMusicRepository` e `JFuguePlayer`. A composição é feita no `App`, permitindo trocar backend de persistência ou motor de áudio via injeção.
 
-## Croquis de Interface
+## Croquis de Interface (proposta futura)
+
+As imagens abaixo são protótipos de interface e ainda não representam telas implementadas no código atual.
 
 ### Tela 1
 
-![Tela_1.jpeg](front/Tela_1.jpeg)
+![Tela_1.png](front/Tela_1.png)
 
 ### Tela 2
 
