@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<FindBugsFilter>
-  <!-- ManagedPlayer is exposed intentionally to satisfy architectural design diagram contract -->
-  <Match>
-    <Class name="com.player.audio.JFuguePlayer" />
-    <Method name="getManagedPlayer" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-</FindBugsFilter>

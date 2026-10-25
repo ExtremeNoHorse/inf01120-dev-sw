@@ -63,15 +63,6 @@ public final class JFuguePlayer implements AudioEngine {
     managedPlayer.seek(index);
   }
 
-  /**
-   * Exposes the underlying {@link ManagedPlayer} for fine-grained control and inspection.
-   *
-   * @return the managed player instance
-   */
-  public ManagedPlayer getManagedPlayer() {
-    return managedPlayer;
-  }
-
   private static Player createPlayer() {
     try {
       SequencerManager.getInstance();

@@ -1,7 +1,6 @@
 package com.player.audio;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -12,15 +11,6 @@ class JFuguePlayerIT {
   void givenNullPlayer_whenConstructed_thenThrowsNullPointerException() {
     // Given & When & Then
     assertThrows(NullPointerException.class, () -> new JFuguePlayer(null));
-  }
-
-  @Test
-  void givenDefaultConstructor_whenCreated_thenManagedPlayerIsAvailable() {
-    // Given & When
-    final JFuguePlayer player = new JFuguePlayer();
-
-    // Then
-    assertNotNull(player.getManagedPlayer());
   }
 
   @Test
