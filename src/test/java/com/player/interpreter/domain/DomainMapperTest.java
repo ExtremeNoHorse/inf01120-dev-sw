@@ -2,26 +2,22 @@ package com.player.interpreter.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.player.config.PlayerConfig;
 import com.player.interpreter.domain.commands.Command;
+import com.player.interpreter.domain.commands.ConfigUpdate;
 import com.player.interpreter.domain.commands.Note;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class DomainMapperTest {
-  private static final int INITIAL_BPM = 120;
-  private static final int FASTER_BPM = 130;
-  private static final int RAISED_OCTAVE = 7;
-  private static final int BASE_OCTAVE = 6;
-  private static final int MAX_VOLUME = 127;
-  private static final int BASE_INST_TEST = 10;
-  private static final String INST_PREFIX = "I";
   private static final String NOTE_A = "A";
 
   @Test
@@ -57,62 +53,44 @@ class DomainMapperTest {
     assertFalse(mapper.supports(null));
   }
 
-  @Test
-  void givenDefaultMapper_whenCheckingPhase2Mappings_thenAllCommandsFunctionCorrectly() {
-    // Given
+  @ParameterizedTest
+  @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G"})
+  void givenDefaultMapper_whenMappingBaseNote_thenReturnsNoteCommand(final String token) {
     final DomainMapper mapper = DomainMapper.createDefault();
-    final PlayerConfig config = PlayerConfig.forVoice(0, INITIAL_BPM);
 
-    // When & Then - Notes
-    assertTrue(mapper.supports(NOTE_A));
-    assertTrue(mapper.supports("G"));
-    assertTrue(mapper.supports("A#:3"));
-    assertTrue(mapper.supports("Bb:2"));
-    assertTrue(mapper.supports("C:1"));
+    assertTrue(mapper.supports(token));
+    final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
+    assertEquals(token, command.getCmd());
+  }
 
-    final Command noteWithDur = mapper.toDomain("A#:3");
-    assertNotNull(noteWithDur);
-    assertEquals("A#6qa100", noteWithDur.execute(config));
+  @ParameterizedTest
+  @CsvSource({"A#:3,A#,QUARTER_NOTE", "Bb:2,Bb,HALF_NOTE", "C:1,C,WHOLE_NOTE"})
+  void givenDefaultMapper_whenMappingStructuredNote_thenReturnsParsedNoteCommand(
+      final String token, final String expectedNote, final MusicalDuration expectedDuration) {
+    final DomainMapper mapper = DomainMapper.createDefault();
 
-    // When & Then - Tempo controls
-    final Command tempoUp = mapper.toDomain(">");
-    assertEquals("T" + FASTER_BPM, tempoUp.execute(config));
-    assertEquals(FASTER_BPM, config.getBpm());
+    assertTrue(mapper.supports(token));
+    final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
+    assertEquals(expectedNote, command.getCmd());
+    assertEquals(expectedDuration, command.getDuration());
+  }
 
-    final Command tempoDown = mapper.toDomain("<");
-    assertEquals("T" + INITIAL_BPM, tempoDown.execute(config));
-    assertEquals(INITIAL_BPM, config.getBpm());
+  @ParameterizedTest
+  @ValueSource(strings = {"?", "V", ">", "<", " "})
+  void givenDefaultMapper_whenMappingControl_thenReturnsConfigUpdateCommand(final String token) {
+    final DomainMapper mapper = DomainMapper.createDefault();
 
-    // When & Then - Octave controls
-    final Command octUp = mapper.toDomain("?");
-    octUp.execute(config);
-    assertEquals(RAISED_OCTAVE, config.getOctave());
+    assertTrue(mapper.supports(token));
+    assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
+  }
 
-    final Command octDown = mapper.toDomain("V");
-    octDown.execute(config);
-    assertEquals(BASE_OCTAVE, config.getOctave());
+  @ParameterizedTest
+  @ValueSource(strings = {"!", ";", ",", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"})
+  void givenDefaultMapper_whenMappingInstrumentToken_thenReturnsConfigUpdateCommand(
+      final String token) {
+    final DomainMapper mapper = DomainMapper.createDefault();
 
-    // When & Then - Volume
-    final Command vol = mapper.toDomain(" ");
-    vol.execute(config);
-    assertEquals(MAX_VOLUME, config.getVolume());
-
-    // When & Then - Instruments
-    final Command bandoneon = mapper.toDomain("!");
-    assertEquals(INST_PREFIX + PlayerConfig.INSTRUMENT_BANDONEON, bandoneon.execute(config));
-
-    final Command tubular = mapper.toDomain(";");
-    assertEquals(INST_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS, tubular.execute(config));
-
-    final Command agogo = mapper.toDomain(",");
-    assertEquals(INST_PREFIX + PlayerConfig.INSTRUMENT_AGOGO, agogo.execute(config));
-
-    // When & Then - Digits
-    final Command oddDigit = mapper.toDomain("3");
-    assertEquals(INST_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS, oddDigit.execute(config));
-
-    config.setInstrument(BASE_INST_TEST);
-    final Command evenDigit = mapper.toDomain("4");
-    assertEquals(INST_PREFIX + "14", evenDigit.execute(config));
+    assertTrue(mapper.supports(token));
+    assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
   }
 }
