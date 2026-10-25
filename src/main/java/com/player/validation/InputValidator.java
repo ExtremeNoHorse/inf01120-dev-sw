@@ -28,7 +28,7 @@ public final class InputValidator {
   }
 
   /**
-   * Adds an additional validation rule predicate.
+   * Adds validation rules to the validator object.
    *
    * @param rule the predicate to add
    */

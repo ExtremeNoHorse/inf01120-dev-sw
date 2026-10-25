@@ -55,7 +55,7 @@ public final class App {
    *
    * @param args command-line arguments
    */
-  public static void main(final String[] args) {
+  static void main(final String[] args) {
     final App app = new App();
     final int exitCode = app.run(args);
     if (exitCode != SUCCESS_EXIT_CODE) {
@@ -89,7 +89,7 @@ public final class App {
       } else if ("export".equalsIgnoreCase(command) && args.length >= MIN_EXPORT_ARGS) {
         exitCode = executeExport(Paths.get(args[1]), Paths.get(args[2]));
       }
-    } catch (final TtmException e) {
+    } catch (final TtmException _) {
       exitCode = ERROR_EXIT_CODE;
     }
 

@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * separation and mapping rules.
  */
 public final class Interpreter {
-  private static final Pattern DELAY_PATTERN = Pattern.compile("^\\[(\\d+)\\]\\s*");
+  private static final Pattern DELAY_PATTERN = Pattern.compile("^\\[(\\d+)]\\s*");
   private static final Pattern NOTE_TOKEN_PATTERN = Pattern.compile("^([A-G][#b]?(?::[1-7])?)");
   private static final String REST_TOKEN = "Rq";
   private static final String SPACE = " ";
@@ -146,11 +146,7 @@ public final class Interpreter {
     }
 
     // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
-    if (lastNoteToken != null) {
-      pattern.append(lastNoteToken).append(SPACE);
-    } else {
-      pattern.append(REST_TOKEN).append(SPACE);
-    }
+    pattern.append(Objects.requireNonNullElse(lastNoteToken, REST_TOKEN)).append(SPACE);
     return lastNoteToken;
   }
 }

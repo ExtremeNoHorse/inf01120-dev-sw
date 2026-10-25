@@ -1,18 +1,22 @@
 package com.player.audio;
 
+import com.player.exception.ErrorCode;
+import com.player.exception.TtmException;
 import java.util.Objects;
+import javax.sound.midi.MidiUnavailableException;
 import org.jfugue.pattern.Pattern;
 import org.jfugue.player.ManagedPlayer;
 import org.jfugue.player.Player;
+import org.jfugue.player.SequencerManager;
 
 /** Concrete {@link AudioEngine} implementation wrapping JFugue's {@link ManagedPlayer}. */
 public final class JFuguePlayer implements AudioEngine {
-  private final Player jfuguePlayer;
+  private final Player player;
   private final ManagedPlayer managedPlayer;
 
   /** Constructs a new {@code JFuguePlayer} with standard managed player settings. */
   public JFuguePlayer() {
-    this(new Player());
+    this(createPlayer());
   }
 
   /**
@@ -21,7 +25,7 @@ public final class JFuguePlayer implements AudioEngine {
    * @param player the JFugue player instance
    */
   public JFuguePlayer(final Player player) {
-    this.jfuguePlayer = Objects.requireNonNull(player, "Player cannot be null");
+    this.player = Objects.requireNonNull(player, "Player cannot be null");
     this.managedPlayer = player.getManagedPlayer();
   }
 
@@ -31,7 +35,7 @@ public final class JFuguePlayer implements AudioEngine {
       return;
     }
     final Pattern jfuguePattern = new Pattern(pattern);
-    new Thread(() -> jfuguePlayer.play(jfuguePattern)).start();
+    new Thread(() -> player.play(jfuguePattern)).start();
   }
 
   @Override
@@ -56,7 +60,7 @@ public final class JFuguePlayer implements AudioEngine {
 
   @Override
   public void seek(final int index) {
-    managedPlayer.seek((long) index);
+    managedPlayer.seek(index);
   }
 
   /**
@@ -66,5 +70,14 @@ public final class JFuguePlayer implements AudioEngine {
    */
   public ManagedPlayer getManagedPlayer() {
     return managedPlayer;
+  }
+
+  private static Player createPlayer() {
+    try {
+      SequencerManager.getInstance();
+      return new Player();
+    } catch (final MidiUnavailableException ex) {
+      throw new TtmException(ErrorCode.AUDIO_UNAVAILABLE, "No audio device is available", ex);
+    }
   }
 }

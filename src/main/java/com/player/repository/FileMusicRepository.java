@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** File-system based implementation of {@link MusicRepository}. */
@@ -89,8 +88,7 @@ public final class FileMusicRepository implements MusicRepository {
       final String name = id.length() >= 4 ? "Música " + id.substring(0, 4) : "Música " + id;
       return new Music(id, name, content);
     } catch (final IOException e) {
-      throw new TtmException(
-          ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path.toString(), e);
+      throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
     }
   }
 
@@ -98,8 +96,7 @@ public final class FileMusicRepository implements MusicRepository {
   public List<Music> findAll() {
     final List<Music> musicList = new ArrayList<>();
     try (Stream<Path> paths = Files.list(baseDir)) {
-      final List<Path> txtFiles =
-          paths.filter(p -> p.toString().endsWith(FILE_EXTENSION)).collect(Collectors.toList());
+      final List<Path> txtFiles = paths.filter(p -> p.toString().endsWith(FILE_EXTENSION)).toList();
 
       for (final Path path : txtFiles) {
         final Music music = getByPath(path);

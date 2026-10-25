@@ -192,7 +192,7 @@ public final class PlayerConfig {
    * @param instrument the new instrument identifier
    */
   public void setInstrument(final int instrument) {
-    this.instrument = Math.max(MIN_INSTRUMENT, Math.min(MAX_INSTRUMENT, instrument));
+    this.instrument = Math.clamp(instrument, MIN_INSTRUMENT, MAX_INSTRUMENT);
   }
 
   public int getOctave() {
@@ -205,7 +205,7 @@ public final class PlayerConfig {
    * @param octave the new octave level
    */
   public void setOctave(final int octave) {
-    this.octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, octave));
+    this.octave = Math.clamp(octave, MIN_OCTAVE, MAX_OCTAVE);
   }
 
   public int getVolume() {
@@ -218,7 +218,7 @@ public final class PlayerConfig {
    * @param volume the new volume level (0-127)
    */
   public void setVolume(final int volume) {
-    this.volume = Math.max(MIN_VOLUME, Math.min(MAX_VOLUME, volume));
+    this.volume = Math.clamp(volume, MIN_VOLUME, MAX_VOLUME);
   }
 
   public int getBpm() {
@@ -231,7 +231,7 @@ public final class PlayerConfig {
    * @param bpm tempo in BPM
    */
   public void setBpm(final int bpm) {
-    this.bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, bpm));
+    this.bpm = Math.clamp(bpm, MIN_BPM, MAX_BPM);
   }
 
   public int getBaseOctave() {
@@ -272,7 +272,7 @@ public final class PlayerConfig {
   /** Doubles current volume, clamping to maximum allowable volume (127). */
   public void doubleVolume() {
     final int doubled = this.volume * 2;
-    this.volume = Math.min(MAX_VOLUME, Math.max(MIN_VOLUME, doubled));
+    this.volume = Math.clamp(doubled, MIN_VOLUME, MAX_VOLUME);
   }
 
   /**

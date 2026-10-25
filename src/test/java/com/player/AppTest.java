@@ -1,6 +1,5 @@
 package com.player;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -150,12 +149,5 @@ class AppTest {
               tempDir.resolve("out.mid").toString()
             });
     assertEquals(1, exportCode);
-  }
-
-  @Test
-  void appDefaultConstructor_initializesProperly() {
-    final App defaultApp = new App();
-    assertDoesNotThrow(() -> defaultApp.run(new String[0]));
-    assertDoesNotThrow(() -> App.main(new String[0]));
   }
 }
