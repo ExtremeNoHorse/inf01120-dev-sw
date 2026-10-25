@@ -59,12 +59,11 @@ public final class Interpreter {
     this.pattern.append("T").append(playerConfig.getBpm()).append(SPACE);
 
     final String[] lines = text.split("\\r?\\n");
-    int voiceIndex = 0;
 
-    for (final String rawLine : lines) {
+    for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
+      final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
         processVoiceLine(rawLine, voiceIndex);
-        voiceIndex++;
       }
     }
 

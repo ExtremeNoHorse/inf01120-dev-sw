@@ -1,6 +1,7 @@
 package com.player.interpreter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -89,7 +90,8 @@ class InterpreterTest {
     final String result = interpreter.interpret(text);
 
     assertTrue(result.contains("V0 I6 C6qa100"));
-    assertTrue(result.contains("V1 I20 D5qa80"));
+    assertFalse(result.contains("V1 I20"));
+    assertTrue(result.contains("V2 I0 D4qa60"));
   }
 
   @Test
