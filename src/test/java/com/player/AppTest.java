@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.player.audio.AudioEngine;
 import com.player.config.PlayerConfig;
+import com.player.exception.ErrorCode;
+import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
 import com.player.repository.Music;
 import com.player.repository.MusicRepository;
@@ -17,11 +19,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class AppTest {
+  private static final String PLAY_COMMAND = "play";
   private InMemoryRepository mockRepository;
   private TestAudioEngine mockAudioEngine;
   private App app;
@@ -111,12 +115,48 @@ class AppTest {
   }
 
   @Test
+  void givenIncompleteOrUnknownCommand_whenRun_thenReturnsZero(@TempDir final Path tempDir) {
+    assertEquals(0, app.run(new String[] {PLAY_COMMAND}));
+    assertEquals(0, app.run(new String[] {"export", tempDir.resolve("source").toString()}));
+    assertEquals(0, app.run(new String[] {"unknown", "argument"}));
+  }
+
+  @Test
+  void givenValidatorFailure_whenRun_thenReturnsErrorCode(@TempDir final Path tempDir)
+      throws IOException {
+    final Path songFile = tempDir.resolve("song.txt");
+    Files.writeString(songFile, "C:3");
+
+    final InputValidator failingValidator = new InputValidator();
+    failingValidator.addRule(
+        input -> {
+          throw new TtmException(ErrorCode.INVALID_INPUT, "forced validation failure");
+        });
+    final Player player =
+        new Player(
+            new Interpreter(), mockAudioEngine, PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+    final App failingApp = new App(failingValidator, mockRepository, player);
+
+    assertEquals(1, failingApp.run(new String[] {PLAY_COMMAND, songFile.toString()}));
+  }
+
+  @Test
+  void givenDefaultMainWithNoArgs_thenDoesNotExit() {
+    try {
+      App.main(new String[0]);
+    } catch (final TtmException exception) {
+      assertEquals(ErrorCode.AUDIO_UNAVAILABLE, exception.getCode());
+      Assumptions.abort("Default App requires an available MIDI/audio device");
+    }
+  }
+
+  @Test
   void givenPlayCommandWithValidFile_whenRun_thenPlaysAndReturnsZero(@TempDir final Path tempDir)
       throws IOException {
     final Path songFile = tempDir.resolve("song.txt");
     Files.writeString(songFile, "C:3 D:3");
 
-    final int exitCode = app.run(new String[] {"play", songFile.toString()});
+    final int exitCode = app.run(new String[] {PLAY_COMMAND, songFile.toString()});
     assertEquals(0, exitCode);
     assertNotNull(mockAudioEngine.getLastPlayed());
     assertTrue(mockAudioEngine.getLastPlayed().contains("C6qa100"));
@@ -138,7 +178,7 @@ class AppTest {
   @Test
   void givenMissingFile_whenPlayOrExport_thenReturnsFailureExitCode(@TempDir final Path tempDir) {
     final int playCode =
-        app.run(new String[] {"play", tempDir.resolve("non-existent.txt").toString()});
+        app.run(new String[] {PLAY_COMMAND, tempDir.resolve("non-existent.txt").toString()});
     assertEquals(1, playCode);
 
     final int exportCode =

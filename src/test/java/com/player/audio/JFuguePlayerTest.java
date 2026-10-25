@@ -2,6 +2,7 @@ package com.player.audio;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -64,6 +65,19 @@ class JFuguePlayerTest {
     assertEquals(SEEK_TICK, fakePlayer.managedPlayer.seekTick);
   }
 
+  @Test
+  void givenIdlePlayer_whenPauseAndResumeInvoked_thenDoesNotDelegate() {
+    final FakePlayer fakePlayer = new FakePlayer();
+    fakePlayer.managedPlayer.setPlaying(false);
+    final JFuguePlayer player = new JFuguePlayer(fakePlayer);
+
+    player.pause();
+    player.resume();
+
+    assertFalse(fakePlayer.managedPlayer.paused);
+    assertFalse(fakePlayer.managedPlayer.resumed);
+  }
+
   private static final class FakePlayer extends Player {
     private final FakeManagedPlayer managedPlayer = new FakeManagedPlayer();
     private final CountDownLatch played = new CountDownLatch(1);
@@ -82,6 +96,7 @@ class JFuguePlayerTest {
   }
 
   private static final class FakeManagedPlayer extends ManagedPlayer {
+    private boolean playing = true;
     private boolean paused;
     private boolean resumed;
     private boolean finished;
@@ -90,7 +105,11 @@ class JFuguePlayerTest {
 
     @Override
     public boolean isPlaying() {
-      return true;
+      return playing;
+    }
+
+    private void setPlaying(final boolean playing) {
+      this.playing = playing;
     }
 
     @Override
