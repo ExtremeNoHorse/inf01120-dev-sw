@@ -2,18 +2,16 @@
 config:
   theme: default
 ---
-%% TTM - Diagrama refatorado (Fase 1)
+%% TTM - Diagrama de Classes Atualizado (Fase 2)
 %%
-%% Mudancas vs original (motivadas pelos resumos R01/R02/R03/Cap5-OOSC):
-%%   1. Menu vira App (unica classe UI/composition root; CLI hoje, GUI depois).
-%%   2. Interpreter dividido: Interpreter (char->pattern) + Player (executa).
-%%   3. AudioEngine interface esconde JFugue (info hiding R02) e expoe exportMidi.
-%%   4. MusicRepository vira interface; FileMusicRepository usa java.nio direto.
-%%   5. Command.execute(PlayerConfig) - sem acoplamento reverso.
-%%   6. TtmException + ErrorCode substituem varios exception types.
-%%   7. PlaybackListener = Consumer<Integer> do JDK (sem interface propria).
-%%   8. PlaybackParameters vira constantes em PlayerConfig.
-%%   9. Terminologia: Music (mockup) substitui Session.
+%% Evolucoes da Fase 2 incorporadas:
+%%   1. Suporte a polifonia (linhas como vozes V0, V1, V2...) com ciclo de parâmetros base a cada quatro vozes.
+%%   2. MusicalDuration enum para representacao das 7 figuras de duracao (semibreve a semifusa).
+%%   3. Note evoluida com suporte a acidentes (#, b) e duracoes explicitas.
+%%   4. DomainMapper com fabrica createDefault() e suporte a tokens estruturados de nota.
+%%   5. MusicRepository com assinatura correta save(Music music).
+%%   6. AudioEngine + JFuguePlayer com exportacao de arquivo MIDI pelo Player.
+%%   7. Tratamento centralizado de erros via TtmException e ErrorCode.
 
 classDiagram
     App *-- InputValidator
@@ -32,8 +30,10 @@ classDiagram
     Interpreter *-- PlayerConfig
 
     DomainMapper *-- Command
+    DomainMapper ..> MusicalDuration
     Command <|.. Note
     Command <|.. ConfigUpdate
+    Note o-- MusicalDuration
 
     TtmException *-- ErrorCode
 
@@ -41,19 +41,20 @@ classDiagram
         -InputValidator validator
         -MusicRepository repository
         -Player player
-        +static void main(String[] args)
+        ~static void main(String[] args)
         +int run(String[] args)
     }
 
     class InputValidator {
         -List~Predicate~String~~ rules
+        +void addRule(Predicate~String~ rule)
         +void validate(String input)
     }
 
     class MusicRepository {
         <<interface>>
         +Music newMusic()
-        +Music save(String Name)
+        +Music save(Music music)
         +Music getById(String id)
         +Music getByPath(Path path)
         +List~Music~ findAll()
@@ -63,7 +64,7 @@ classDiagram
     class FileMusicRepository {
         -Path baseDir
         +Music newMusic()
-        +Music save(String Name)
+        +Music save(Music music)
         +Music getById(String id)
         +Music getByPath(Path path)
         +List~Music~ findAll()
@@ -74,12 +75,15 @@ classDiagram
         -String id
         -String name
         -String content
+        -boolean hasRecording
         +String getId()
+        +void setId(String id)
         +String getName()
         +void setName(String name)
         +String getContent()
         +void setContent(String content)
         +boolean hasRecording()
+        +void setHasRecording(boolean hasRecording)
     }
 
     class Player {
@@ -92,6 +96,7 @@ classDiagram
         +void stop()
         +void configure(PlayerConfig config)
         +Path export(Music music, Path targetPath)
+        +PlayerConfig getPlayerConfig()
     }
 
     class Interpreter {
@@ -103,6 +108,7 @@ classDiagram
 
     class DomainMapper {
         -Map~String,Command~ table
+        +static DomainMapper createDefault()
         +Command toDomain(String c)
         +boolean supports(String c)
     }
@@ -115,8 +121,29 @@ classDiagram
     class Note {
         -static String VOLUME_INTENSITY_SEPARATOR
         -String cmd
+        -MusicalDuration duration
+        +Note(String cmd)
+        +Note(String cmd, MusicalDuration duration)
+        +String getCmd()
+        +MusicalDuration getDuration()
         +String execute(PlayerConfig config)
-        -static String buildJfugueToken(String jfugueNote, PlayerConfig config)
+        -static String buildJfugueToken(String jfugueNote, MusicalDuration duration, PlayerConfig config)
+    }
+
+    class MusicalDuration {
+        <<enumeration>>
+        SEMIBREVE
+        MINIMA
+        SEMINIMA
+        COLCHEIA
+        SEMICOLCHEIA
+        FUSA
+        SEMIFUSA
+        -int id
+        -String jfugueToken
+        +int getId()
+        +String getJfugueToken()
+        +static MusicalDuration fromId(int id)
     }
 
     class ConfigUpdate {
@@ -129,6 +156,11 @@ classDiagram
         -int octave
         -int volume
         -int bpm
+        -int baseOctave
+        -int baseVolume
+        -int baseInstrument
+        +static PlayerConfig forVoice(int voiceIndex, int bpm)
+        +static Map~Integer,String~ getGeneralMidiInstruments()
         +int getInstrument()
         +void setInstrument(int instrument)
         +int getOctave()
@@ -137,7 +169,16 @@ classDiagram
         +void setVolume(int volume)
         +int getBpm()
         +void setBpm(int bpm)
+        +int getBaseOctave()
+        +int getBaseVolume()
+        +int getBaseInstrument()
+        +void increaseOctaveRelative()
+        +void decreaseOctaveRelative()
+        +void doubleVolume()
+        +void increaseBpm(int delta)
+        +void decreaseBpm(int delta)
     }
+
     class AudioEngine {
         <<interface>>
         +void play(String pattern)
@@ -148,20 +189,27 @@ classDiagram
     }
 
     class JFuguePlayer {
+        -Player player
+        -ManagedPlayer managedPlayer
         +void play(String pattern)
-        +ManagedPlayer getManagedPlayer()
+        +void pause()
+        +void resume()
+        +void stop()
+        +void seek(int index)
     }
 
     class ManagedPlayer {
         +void pause()
         +void resume()
-        +void stop()
+        +void finish()
+        +void reset()
         +void seek(long tick)
+        +boolean isPlaying()
+        +boolean isPaused()
     }
 
     class TtmException {
         -ErrorCode code
-        -String message
         +ErrorCode getCode()
     }
 
@@ -172,5 +220,5 @@ classDiagram
         MUSIC_NOT_FOUND
         INVALID_PLAYBACK_CONFIG
         PERSISTENCE_FAILURE
-        AUDIO_ENGINE_FAILURE
+        AUDIO_UNAVAILABLE
     }

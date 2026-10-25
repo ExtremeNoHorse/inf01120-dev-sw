@@ -129,7 +129,7 @@ Regra prática: **antes de abrir PR, rodar `mvn verify` local**. Se passar local
 
 ### 2.2. Ajustar o piso de cobertura
 
-Editar `<jacoco.line.coverage.min>` no `pom.xml`. Começou em `0.00` (permite base vazia) e deve subir conforme o código cresce, por exemplo `0.70` quando houver testes reais.
+O piso atual é `0.90`, definido em `<jacoco.line.coverage.min>` no `pom.xml`. Se esse limite for alterado, atualize também a documentação e confirme o novo valor executando `mvn verify`.
 
 ---
 

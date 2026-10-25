@@ -2,21 +2,27 @@ package com.player.interpreter.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.player.interpreter.domain.commands.Command;
+import com.player.interpreter.domain.commands.ConfigUpdate;
 import com.player.interpreter.domain.commands.Note;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class DomainMapperTest {
+  private static final String NOTE_A = "A";
 
   @Test
   void givenNullTable_whenConstructed_thenThrowsNullPointerException() {
-    // Given & When & Then
+    // Given, When & Then
     assertThrows(NullPointerException.class, () -> new DomainMapper(null));
   }
 
@@ -24,12 +30,12 @@ class DomainMapperTest {
   void givenValidTable_whenToDomain_thenReturnsMappedCommand() {
     // Given
     final Map<String, Command> table = new HashMap<>();
-    final Command noteCommand = new Note("A");
-    table.put("A", noteCommand);
+    final Command noteCommand = new Note(NOTE_A);
+    table.put(NOTE_A, noteCommand);
     final DomainMapper mapper = new DomainMapper(table);
 
     // When
-    final Command result = mapper.toDomain("A");
+    final Command result = mapper.toDomain(NOTE_A);
 
     // Then
     assertEquals(noteCommand, result);
@@ -41,37 +47,50 @@ class DomainMapperTest {
     final Map<String, Command> table = new HashMap<>();
     final DomainMapper mapper = new DomainMapper(table);
 
-    // When
-    final Command result = mapper.toDomain("B");
-
-    // Then
-    assertNull(result);
+    // When & Then
+    assertNull(mapper.toDomain("invalid"));
+    assertNull(mapper.toDomain(null));
+    assertFalse(mapper.supports(null));
   }
 
-  @Test
-  void givenValidTable_whenSupports_thenReturnsTrueForExistingKey() {
-    // Given
-    final Map<String, Command> table = new HashMap<>();
-    table.put("C", new Note("C"));
-    final DomainMapper mapper = new DomainMapper(table);
+  @ParameterizedTest
+  @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G"})
+  void givenDefaultMapper_whenMappingBaseNote_thenReturnsNoteCommand(final String token) {
+    final DomainMapper mapper = DomainMapper.createDefault();
 
-    // When
-    final boolean result = mapper.supports("C");
-
-    // Then
-    assertTrue(result);
+    assertTrue(mapper.supports(token));
+    final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
+    assertEquals(token, command.getCmd());
   }
 
-  @Test
-  void givenValidTable_whenSupports_thenReturnsFalseForMissingKey() {
-    // Given
-    final Map<String, Command> table = new HashMap<>();
-    final DomainMapper mapper = new DomainMapper(table);
+  @ParameterizedTest
+  @CsvSource({"A#:3,A#,QUARTER_NOTE", "Bb:2,Bb,HALF_NOTE", "C:1,C,WHOLE_NOTE"})
+  void givenDefaultMapper_whenMappingStructuredNote_thenReturnsParsedNoteCommand(
+      final String token, final String expectedNote, final MusicalDuration expectedDuration) {
+    final DomainMapper mapper = DomainMapper.createDefault();
 
-    // When
-    final boolean result = mapper.supports("D");
+    assertTrue(mapper.supports(token));
+    final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
+    assertEquals(expectedNote, command.getCmd());
+    assertEquals(expectedDuration, command.getDuration());
+  }
 
-    // Then
-    assertFalse(result);
+  @ParameterizedTest
+  @ValueSource(strings = {"?", "V", ">", "<", " "})
+  void givenDefaultMapper_whenMappingControl_thenReturnsConfigUpdateCommand(final String token) {
+    final DomainMapper mapper = DomainMapper.createDefault();
+
+    assertTrue(mapper.supports(token));
+    assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"!", ";", ",", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"})
+  void givenDefaultMapper_whenMappingInstrumentToken_thenReturnsConfigUpdateCommand(
+      final String token) {
+    final DomainMapper mapper = DomainMapper.createDefault();
+
+    assertTrue(mapper.supports(token));
+    assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
   }
 }
