@@ -56,8 +56,8 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
     - `7`: Semifusa (`x`)
     - *Exemplos*: `A:3` (Lá semínima), `C#:2` (Dó sustenido mínima), `Bb:4` (Si bemol colcheia).
 - **Controle de Oitava Relativa**:
-  - `?`: sobe uma oitava relativa à oitava base da voz. Se já subiu, retorna à oitava base.
-  - `V`: desce uma oitava relativa à oitava base da voz. Se já desceu, retorna à oitava base.
+  - `?`: aumenta a oitava atual em uma unidade, limitada ao intervalo de 0 a 9.
+  - `V`: diminui a oitava atual em uma unidade, limitada ao intervalo de 0 a 9.
 - **Andamento Global (BPM)**:
   - `>`: acelera o BPM global em 10 batidas por minuto.
   - `<`: desacelera o BPM global em 10 batidas por minuto.

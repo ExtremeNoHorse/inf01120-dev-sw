@@ -246,27 +246,14 @@ public final class PlayerConfig {
     return baseInstrument;
   }
 
-  /**
-   * Raises octave by 1 relative to base octave. If already raised or exceeding limit, resets to
-   * base.
-   */
+  /** Raises the current octave by one, clamped to the supported octave range. */
   public void increaseOctaveRelative() {
-    if (this.octave == this.baseOctave && this.octave < MAX_OCTAVE) {
-      this.octave++;
-    } else {
-      this.octave = this.baseOctave;
-    }
+    this.octave = Math.clamp(this.octave + 1, MIN_OCTAVE, MAX_OCTAVE);
   }
 
-  /**
-   * Lowers octave by 1 relative to base octave. If already lowered or below limit, resets to base.
-   */
+  /** Lowers the current octave by one, clamped to the supported octave range. */
   public void decreaseOctaveRelative() {
-    if (this.octave == this.baseOctave && this.octave > MIN_OCTAVE) {
-      this.octave--;
-    } else {
-      this.octave = this.baseOctave;
-    }
+    this.octave = Math.clamp(this.octave - 1, MIN_OCTAVE, MAX_OCTAVE);
   }
 
   /** Doubles current volume, clamping to maximum allowable volume (127). */

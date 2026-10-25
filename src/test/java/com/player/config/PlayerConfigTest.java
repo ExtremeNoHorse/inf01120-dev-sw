@@ -11,6 +11,7 @@ class PlayerConfigTest {
   private static final int TEST_OCTAVE_4 = 4;
   private static final int TEST_OCTAVE_3 = 3;
   private static final int TEST_OCTAVE_7 = 7;
+  private static final int TEST_OCTAVE_8 = 8;
 
   private static final int TEST_VOL_100 = 100;
   private static final int TEST_VOL_80 = 80;
@@ -93,7 +94,7 @@ class PlayerConfigTest {
   }
 
   @Test
-  void givenRelativeOctaveChanges_whenCalled_thenModifiesAndResetsCorrectly() {
+  void givenRelativeOctaveChanges_whenCalled_thenAccumulatesWithinBounds() {
     // Given
     final PlayerConfig v0 = PlayerConfig.forVoice(0, TEST_BPM_120);
     assertEquals(TEST_OCTAVE_6, v0.getOctave());
@@ -103,13 +104,30 @@ class PlayerConfigTest {
     assertEquals(TEST_OCTAVE_7, v0.getOctave());
 
     v0.increaseOctaveRelative();
-    assertEquals(TEST_OCTAVE_6, v0.getOctave());
+    assertEquals(TEST_OCTAVE_8, v0.getOctave());
 
     v0.decreaseOctaveRelative();
-    assertEquals(TEST_OCTAVE_5, v0.getOctave());
+    assertEquals(TEST_OCTAVE_7, v0.getOctave());
 
     v0.decreaseOctaveRelative();
     assertEquals(TEST_OCTAVE_6, v0.getOctave());
+  }
+
+  @Test
+  void givenOctaveAtBoundary_whenChanged_thenRemainsWithinBounds() {
+    // Given
+    final PlayerConfig maxConfig =
+        new PlayerConfig(0, PlayerConfig.MAX_OCTAVE, TEST_VOL_40, TEST_BPM_120);
+    final PlayerConfig minConfig =
+        new PlayerConfig(0, PlayerConfig.MIN_OCTAVE, TEST_VOL_40, TEST_BPM_120);
+
+    // When
+    maxConfig.increaseOctaveRelative();
+    minConfig.decreaseOctaveRelative();
+
+    // Then
+    assertEquals(PlayerConfig.MAX_OCTAVE, maxConfig.getOctave());
+    assertEquals(PlayerConfig.MIN_OCTAVE, minConfig.getOctave());
   }
 
   @Test

@@ -65,8 +65,8 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 
 | Caractere | Ação | Escopo |
 |-----------|------|--------|
-| `?` | Aumenta 1 oitava (relativa à oitava base da voz). Se já aumentada, retorna à base. | Voz atual |
-| `V` | Diminui 1 oitava (relativa à oitava base da voz). Se já diminuída, retorna à base. | Voz atual |
+| `?` | Aumenta a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
+| `V` | Diminui a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
 | `>` | Aumenta o BPM em 10 (acelera). | Global (todas as vozes) |
 | `<` | Diminui o BPM em 10 (desacelera). | Global (todas as vozes) |
 | ` ` (Espaço) | Dobra o volume da voz (com teto máximo de 127). | Voz atual |
