@@ -100,6 +100,19 @@ class JFuguePlayerTest {
     assertEquals(ErrorCode.AUDIO_UNAVAILABLE, exception.getCode());
   }
 
+  @Test
+  void givenIdlePlayer_whenPauseAndResumeInvoked_thenDoesNotDelegate() {
+    final FakePlayer fakePlayer = new FakePlayer();
+    fakePlayer.managedPlayer.setPlaying(false);
+    final JFuguePlayer player = new JFuguePlayer(fakePlayer);
+
+    player.pause();
+    player.resume();
+
+    assertFalse(fakePlayer.managedPlayer.paused);
+    assertFalse(fakePlayer.managedPlayer.resumed);
+  }
+
   private static final class FakePlayer extends Player {
     private final FakeManagedPlayer managedPlayer = new FakeManagedPlayer();
 
@@ -112,6 +125,7 @@ class JFuguePlayerTest {
   private static final class FakeManagedPlayer extends ManagedPlayer {
     private boolean failOnStart;
     private Sequence startedSequence;
+    private boolean playing = true;
     private boolean paused;
     private boolean resumed;
     private boolean finished;
@@ -128,7 +142,11 @@ class JFuguePlayerTest {
 
     @Override
     public boolean isPlaying() {
-      return true;
+      return playing;
+    }
+
+    private void setPlaying(final boolean playing) {
+      this.playing = playing;
     }
 
     @Override

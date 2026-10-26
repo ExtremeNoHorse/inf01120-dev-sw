@@ -86,12 +86,11 @@ public final class Interpreter {
 
     final int channelVolume = withChannelVolume ? settings.getVolume() : NO_CHANNEL_VOLUME;
     final String[] lines = text.split("\\r?\\n");
-    int voiceIndex = 0;
 
-    for (final String rawLine : lines) {
+    for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
+      final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
         processVoiceLine(rawLine, voiceIndex, voiceConfig(voiceIndex, settings), channelVolume);
-        voiceIndex++;
       }
     }
 
