@@ -18,6 +18,8 @@ public final class Interpreter {
   private static final Pattern NOTE_TOKEN_PATTERN = Pattern.compile("^([A-G][#b]?(?::[1-7])?)");
   private static final String REST_TOKEN = "Rq";
   private static final String SPACE = " ";
+  private static final String CHANNEL_VOLUME = ":CE(7,%d)";
+  private static final int NO_CHANNEL_VOLUME = -1;
 
   private final DomainMapper mapper;
   private final PlayerConfig playerConfig;
@@ -48,6 +50,30 @@ public final class Interpreter {
    * @throws TtmException if input is null
    */
   public String interpret(final String text) {
+    return interpret(text, this.playerConfig, false);
+  }
+
+  /**
+   * Interprets text using the given user settings instead of the base configuration.
+   *
+   * <p>The settings' BPM is global. Octave shifts every voice relative to the settings' base
+   * octave, so each voice keeps its own register (soprano stays above bass). The volume sets the
+   * MIDI channel volume of every voice, acting as a master volume over the note velocities (which
+   * the space command keeps doubling). It is always written, so going back to the default volume
+   * also overrides a lower volume left in the synthesizer by a previous playback.
+   *
+   * @param text the input text, where each line corresponds to an independent voice
+   * @param settings the user playback settings
+   * @return the compiled JFugue pattern string
+   * @throws TtmException if input is null
+   */
+  public String interpret(final String text, final PlayerConfig settings) {
+    return interpret(text, settings, true);
+  }
+
+  private String interpret(
+      final String text, final PlayerConfig settings, final boolean withChannelVolume) {
+    Objects.requireNonNull(settings, "PlayerConfig cannot be null");
     if (text == null) {
       throw new TtmException(ErrorCode.INVALID_INPUT, "Input text cannot be null");
     }
@@ -56,14 +82,15 @@ public final class Interpreter {
     }
 
     this.pattern = new StringBuilder();
-    this.pattern.append("T").append(playerConfig.getBpm()).append(SPACE);
+    this.pattern.append("T").append(settings.getBpm()).append(SPACE);
 
+    final int channelVolume = withChannelVolume ? settings.getVolume() : NO_CHANNEL_VOLUME;
     final String[] lines = text.split("\\r?\\n");
     int voiceIndex = 0;
 
     for (final String rawLine : lines) {
       if (!rawLine.trim().isEmpty()) {
-        processVoiceLine(rawLine, voiceIndex);
+        processVoiceLine(rawLine, voiceIndex, voiceConfig(voiceIndex, settings), channelVolume);
         voiceIndex++;
       }
     }
@@ -71,11 +98,29 @@ public final class Interpreter {
     return this.pattern.toString().trim();
   }
 
-  private void processVoiceLine(final String rawLine, final int voiceIndex) {
-    final PlayerConfig voiceConfig = PlayerConfig.forVoice(voiceIndex, this.playerConfig.getBpm());
+  private static PlayerConfig voiceConfig(final int voiceIndex, final PlayerConfig settings) {
+    final PlayerConfig base = PlayerConfig.forVoice(voiceIndex, settings.getBpm());
+    final int octave = base.getOctave() + settings.getOctave() - settings.getBaseOctave();
+    return new PlayerConfig(
+        base.getInstrument(),
+        octave,
+        base.getVolume(),
+        settings.getBpm(),
+        base.getBaseOctave(),
+        base.getBaseVolume(),
+        base.getBaseInstrument());
+  }
 
+  private void processVoiceLine(
+      final String rawLine,
+      final int voiceIndex,
+      final PlayerConfig voiceConfig,
+      final int channelVolume) {
     pattern.append("V").append(voiceIndex).append(SPACE);
     pattern.append("I").append(voiceConfig.getInstrument()).append(SPACE);
+    if (channelVolume != NO_CHANNEL_VOLUME) {
+      pattern.append(String.format(CHANNEL_VOLUME, channelVolume)).append(SPACE);
+    }
 
     String line = rawLine;
 

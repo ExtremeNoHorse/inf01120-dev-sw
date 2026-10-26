@@ -28,4 +28,25 @@ public interface AudioEngine {
    * @param index tick or millisecond index to seek to
    */
   void seek(final int index);
+
+  /**
+   * Reports the current playback position.
+   *
+   * @return current tick position, or 0 when nothing is loaded
+   */
+  long getTickPosition();
+
+  /**
+   * Reports the total length of the loaded music.
+   *
+   * @return total length in ticks, or 0 when nothing is loaded
+   */
+  long getTickLength();
+
+  /**
+   * Checks whether a music is loaded and not finished (playing or paused).
+   *
+   * @return {@code true} while a playback session is active
+   */
+  boolean isActive();
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import org.junit.jupiter.api.BeforeEach;
@@ -151,5 +152,26 @@ class InterpreterTest {
     assertTrue(result.contains("T130"));
     assertTrue(result.contains("I24"));
     assertTrue(result.contains("C7a100"));
+  }
+
+  @Test
+  void givenUserSettings_whenInterpret_thenShiftsEveryVoiceAndUsesGlobalBpm() {
+    // Given: voice 0 one octave up, half volume and 90 BPM
+    final PlayerConfig settings = PlayerConfig.forVoice(0, 90);
+    settings.setOctave(settings.getBaseOctave() + 1);
+    settings.setVolume(settings.getBaseVolume() / 2);
+
+    // When
+    final String result = interpreter.interpret("C:3\nC:3", settings);
+
+    // Then: octaves go 6 -> 7 and 5 -> 6; velocities stay, channel volume becomes 50
+    assertEquals("T90 V0 I6 :CE(7,50) C7qa100 V1 I20 :CE(7,50) C6qa80", result);
+  }
+
+  @Test
+  void givenSettingsWithZeroVolume_whenInterpret_thenMutesChannelButKeepsVelocity() {
+    final PlayerConfig settings = new PlayerConfig(0, 6, 0, 120);
+
+    assertEquals("T120 V0 I6 :CE(7,0) C6qa100", interpreter.interpret("C:3", settings));
   }
 }

@@ -60,6 +60,21 @@ class PlayerTest {
       this.seekIndex = index;
     }
 
+    @Override
+    public long getTickPosition() {
+      return 0;
+    }
+
+    @Override
+    public long getTickLength() {
+      return 0;
+    }
+
+    @Override
+    public boolean isActive() {
+      return false;
+    }
+
     public String getPlayedPattern() {
       return playedPattern;
     }

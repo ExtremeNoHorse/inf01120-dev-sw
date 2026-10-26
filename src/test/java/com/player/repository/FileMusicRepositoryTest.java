@@ -50,6 +50,22 @@ class FileMusicRepositoryTest {
   }
 
   @Test
+  void givenNamedMusic_whenSaveAndReload_thenKeepsName() {
+    repository.save(new Music("named", "Minha Canção", "A B C"));
+
+    assertEquals("Minha Canção", repository.getById("named").getName());
+    assertEquals("Minha Canção", repository.findAll().getFirst().getName());
+  }
+
+  @Test
+  void givenNamedMusic_whenDeleted_thenRemovesNameFileToo() {
+    repository.save(new Music("gone", "Some", "A"));
+    repository.deleteById("gone");
+
+    assertFalse(Files.exists(tempDir.resolve("gone.name")));
+  }
+
+  @Test
   void givenMusicWithoutId_whenSave_thenGeneratesIdAndPersists() {
     final Music music = new Music(null, "No ID Song", "C D E");
     final Music saved = repository.save(music);

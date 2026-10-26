@@ -12,8 +12,19 @@ config:
 %%   5. MusicRepository com assinatura correta save(Music music).
 %%   6. AudioEngine + JFuguePlayer com exportacao de arquivo MIDI pelo Player.
 %%   7. Tratamento centralizado de erros via TtmException e ErrorCode.
+%%   8. Interface grafica Swing em MVP: MainWindow -> MainPresenter -> MusicLibrary / Player.
 
 classDiagram
+    App ..> MainPresenter : cria
+    MainView <|.. MainWindow
+    MainWindow ..> MainPresenter : eventos
+    MainPresenter --> MainView
+    MainPresenter --> MusicLibrary
+    MainPresenter --> Player
+    MainPresenter --> InputValidator
+    MainPresenter ..> TextProgress
+    MusicLibrary --> MusicRepository
+
     App *-- InputValidator
     App *-- MusicRepository
     App *-- Player
@@ -95,6 +106,10 @@ classDiagram
         +void resume()
         +void stop()
         +void configure(PlayerConfig config)
+        +void seek(int tick)
+        +long getTickPosition()
+        +long getTickLength()
+        +boolean isActive()
         +Path export(Music music, Path targetPath)
         +PlayerConfig getPlayerConfig()
     }
@@ -104,6 +119,7 @@ classDiagram
         -PlayerConfig playerConfig
         -StringBuilder pattern
         +String interpret(String text)
+        +String interpret(String text, PlayerConfig settings)
     }
 
     class DomainMapper {
@@ -186,6 +202,51 @@ classDiagram
         +void resume()
         +void stop()
         +void seek(int index)
+        +long getTickPosition()
+        +long getTickLength()
+        +boolean isActive()
+    }
+
+    class MusicLibrary {
+        -MusicRepository repository
+        +List~Music~ listAll()
+        +Music create(String name)
+        +Music importFile(Path source)
+        +Music saveContent(Music music, String content)
+        +Music rename(Music music, String newName)
+        +void delete(Music music)
+    }
+
+    class MainView {
+        <<interface>>
+        +void showMusics(List~Music~ musics, Music selected)
+        +void showStartScreen()
+        +void showEditor(Music music)
+        +String editorText()
+        +void showSettings(int octave, int bpm, int volume)
+        +void showPlaying(boolean playing)
+        +void showProgress(int permille)
+        +void highlight(List~Integer~ offsets)
+    }
+
+    class MainPresenter {
+        -MusicLibrary library
+        -Player player
+        -InputValidator validator
+        -Music current
+        +void attach(MainView view)
+        +void onPlayPause()
+        +void onSave()
+        +void onTick()
+    }
+
+    class MainWindow {
+        -JFrame frame
+        +static void open(MainPresenter presenter)
+    }
+
+    class TextProgress {
+        +static List~Integer~ offsets(String text, double fraction)
     }
 
     class JFuguePlayer {

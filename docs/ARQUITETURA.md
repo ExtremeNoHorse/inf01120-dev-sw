@@ -26,7 +26,11 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
    - `Music`: Entidade que representa uma composição textual e seu estado.
    - `MusicRepository`: Interface para operações de CRUD e leitura por caminho.
    - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`).
-5. **Tratamento Centralizado de Erros**:
+5. **Camada de Apresentação (GUI Swing)** — ver [INTERFACE_GRAFICA.md](INTERFACE_GRAFICA.md):
+   - `MusicLibrary`: *Facade* com os casos de uso da lista de músicas.
+   - `MainView` / `MainPresenter`: padrão MVP; o presenter não depende de Swing e é testado com uma view falsa.
+   - `ui.swing.*`: telas dos croquis, sem regra de negócio.
+6. **Tratamento Centralizado de Erros**:
    - `TtmException`: Exceção não-checada de domínio.
    - `ErrorCode`: Enum que tipifica causas de erro (`INVALID_INPUT`, `PERSISTENCE_FAILURE`, etc.).
 

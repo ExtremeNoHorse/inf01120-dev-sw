@@ -8,6 +8,9 @@ import com.player.interpreter.domain.DomainMapper;
 import com.player.repository.FileMusicRepository;
 import com.player.repository.Music;
 import com.player.repository.MusicRepository;
+import com.player.ui.MainPresenter;
+import com.player.ui.swing.MainWindow;
+import com.player.usecase.MusicLibrary;
 import com.player.validation.InputValidator;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,12 +54,25 @@ public final class App {
   }
 
   /**
-   * Main entry point for the application.
+   * Creates the presenter of the graphical interface wired to this app's dependencies.
+   *
+   * @return the main window presenter
+   */
+  public MainPresenter createPresenter() {
+    return new MainPresenter(new MusicLibrary(repository), player, validator);
+  }
+
+  /**
+   * Main entry point for the application. Without arguments it opens the graphical interface.
    *
    * @param args command-line arguments
    */
   static void main(final String[] args) {
     final App app = new App();
+    if (args.length == 0) {
+      MainWindow.open(app.createPresenter());
+      return;
+    }
     final int exitCode = app.run(args);
     if (exitCode != SUCCESS_EXIT_CODE) {
       System.exit(exitCode);

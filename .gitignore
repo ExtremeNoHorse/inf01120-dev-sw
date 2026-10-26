@@ -69,3 +69,6 @@ target/
 .settings/
 
 *.DS_Store
+
+# Músicas salvas pela interface gráfica (dados locais do usuário)
+musics/

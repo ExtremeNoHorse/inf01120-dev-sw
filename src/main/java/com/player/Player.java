@@ -49,7 +49,7 @@ public final class Player {
     if (music == null) {
       throw new TtmException(ErrorCode.INVALID_INPUT, "Music cannot be null for playback");
     }
-    final String pattern = interpreter.interpret(music.getContent());
+    final String pattern = interpreter.interpret(music.getContent(), playerConfig);
     audioEngine.play(pattern);
   }
 
@@ -66,6 +66,42 @@ public final class Player {
   /** Stops playback completely and resets audio stream. */
   public void stop() {
     audioEngine.stop();
+  }
+
+  /**
+   * Moves playback to the given tick position.
+   *
+   * @param tick the target tick, as reported by {@link #getTickLength()}
+   */
+  public void seek(final int tick) {
+    audioEngine.seek(tick);
+  }
+
+  /**
+   * Reports the current playback position.
+   *
+   * @return current tick position
+   */
+  public long getTickPosition() {
+    return audioEngine.getTickPosition();
+  }
+
+  /**
+   * Reports the length of the music being played.
+   *
+   * @return total length in ticks
+   */
+  public long getTickLength() {
+    return audioEngine.getTickLength();
+  }
+
+  /**
+   * Checks whether a playback session is active (playing or paused).
+   *
+   * @return {@code true} while a music is loaded and not finished
+   */
+  public boolean isActive() {
+    return audioEngine.isActive();
   }
 
   /**
@@ -92,7 +128,7 @@ public final class Player {
           ErrorCode.INVALID_INPUT, "Music and targetPath cannot be null for export");
     }
 
-    final String patternStr = interpreter.interpret(music.getContent());
+    final String patternStr = interpreter.interpret(music.getContent(), playerConfig);
     try {
       final Path parent = targetPath.getParent();
       if (parent != null && !Files.exists(parent)) {

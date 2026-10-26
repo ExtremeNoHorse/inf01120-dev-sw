@@ -77,7 +77,7 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 
 ```text
 src/main/java/com/player/
-├── App.java                               # Composition root e interface CLI
+├── App.java                               # Composition root, CLI e abertura da GUI
 ├── Player.java                            # Coordenador de playback e exportação MIDI
 ├── audio/
 │   ├── AudioEngine.java                   # Interface de abstração do motor de áudio
@@ -96,6 +96,13 @@ src/main/java/com/player/
 │           ├── Command.java               # Interface do padrão Command
 │           ├── ConfigUpdate.java          # Comandos de alteração de configuração/instrumento
 │           └── Note.java                  # Comando de nota com suporte a acidentes e duração
+├── ui/
+│   ├── MainView.java                      # Contrato da tela principal (MVP, view passiva)
+│   ├── MainPresenter.java                 # Estado da tela e chamadas aos casos de uso
+│   ├── TextProgress.java                  # Progresso -> posição destacada no texto
+│   └── swing/                             # Telas Swing dos croquis (sem regra de negócio)
+├── usecase/
+│   └── MusicLibrary.java                  # Facade: criar, importar, salvar, renomear, deletar
 ├── repository/
 │   ├── FileMusicRepository.java           # Persistência em arquivos no filesystem
 │   ├── Music.java                         # Entidade de música

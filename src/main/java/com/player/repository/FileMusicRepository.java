@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 /** File-system based implementation of {@link MusicRepository}. */
 public final class FileMusicRepository implements MusicRepository {
   private static final String FILE_EXTENSION = ".txt";
+  private static final String NAME_EXTENSION = ".name";
+  private static final int SHORT_ID_LENGTH = 4;
   private final Path baseDir;
 
   /**
@@ -53,6 +55,9 @@ public final class FileMusicRepository implements MusicRepository {
     try {
       final String content = music.getContent() != null ? music.getContent() : "";
       Files.writeString(filePath, content);
+      if (music.getName() != null) {
+        Files.writeString(baseDir.resolve(music.getId() + NAME_EXTENSION), music.getName());
+      }
       return music;
     } catch (final IOException e) {
       throw new TtmException(
@@ -85,7 +90,8 @@ public final class FileMusicRepository implements MusicRepository {
           fileName.endsWith(FILE_EXTENSION)
               ? fileName.substring(0, fileName.length() - FILE_EXTENSION.length())
               : fileName;
-      final String name = id.length() >= 4 ? "Música " + id.substring(0, 4) : "Música " + id;
+      final Path namePath = path.resolveSibling(id + NAME_EXTENSION);
+      final String name = Files.exists(namePath) ? Files.readString(namePath) : defaultName(id);
       return new Music(id, name, content);
     } catch (final IOException e) {
       throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
@@ -119,9 +125,14 @@ public final class FileMusicRepository implements MusicRepository {
     final Path filePath = baseDir.resolve(id + FILE_EXTENSION);
     try {
       Files.deleteIfExists(filePath);
+      Files.deleteIfExists(baseDir.resolve(id + NAME_EXTENSION));
     } catch (final IOException e) {
       throw new TtmException(
           ErrorCode.PERSISTENCE_FAILURE, "Erro ao deletar o arquivo: " + filePath, e);
     }
+  }
+
+  private static String defaultName(final String id) {
+    return "Música " + id.substring(0, Math.min(id.length(), SHORT_ID_LENGTH));
   }
 }
