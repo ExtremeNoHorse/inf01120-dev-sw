@@ -1,11 +1,17 @@
 package com.player.interpreter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
+import com.player.interpreter.domain.DomainMapper;
+import com.player.interpreter.domain.commands.Command;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +82,16 @@ class InterpreterTest {
     assertTrue(result.contains("V1 I20 E5qa80"));
     assertTrue(result.contains("V2 I0 G4qa60"));
     assertTrue(result.contains("V3 I70 C3wa40"));
+  }
+
+  @Test
+  void givenBlankVoiceLine_whenInterpret_thenSkipsIt() {
+    final String text = String.join(System.lineSeparator(), "C:3", "   ", "D:3");
+    final String result = interpreter.interpret(text);
+
+    assertTrue(result.contains("V0 I6 C6qa100"));
+    assertFalse(result.contains("V1 I20"));
+    assertTrue(result.contains("V2 I0 D4qa60"));
   }
 
   @Test
@@ -151,5 +167,32 @@ class InterpreterTest {
     assertTrue(result.contains("T130"));
     assertTrue(result.contains("I24"));
     assertTrue(result.contains("C7a100"));
+  }
+
+  @Test
+  void givenMappedNullCommand_whenInterpret_thenSkipsTheToken() {
+    final Map<String, Command> table = new HashMap<>();
+    table.put("C", null);
+    final Interpreter customInterpreter =
+        new Interpreter(
+            new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+
+    assertEquals("T120 V0 I6", customInterpreter.interpret("C"));
+  }
+
+  @Test
+  void givenCommandReturningNull_whenInterpret_thenSkipsItsResult() {
+    final Map<String, Command> table = new HashMap<>();
+    table.put("?", config -> null);
+    final Interpreter customInterpreter =
+        new Interpreter(
+            new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+
+    assertEquals("T120 V0 I6", customInterpreter.interpret("?"));
+  }
+
+  @Test
+  void givenLowercaseOutsideNoteRange_whenInterpret_thenProducesRest() {
+    assertTrue(interpreter.interpret("h").contains("Rq"));
   }
 }

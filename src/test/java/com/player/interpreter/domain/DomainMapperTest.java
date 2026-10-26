@@ -75,6 +75,16 @@ class DomainMapperTest {
     assertEquals(expectedDuration, command.getDuration());
   }
 
+  @Test
+  void givenStructuredNoteWithoutDuration_whenMapped_thenDurationIsNull() {
+    final DomainMapper mapper = DomainMapper.createDefault();
+
+    final Note command = assertInstanceOf(Note.class, mapper.toDomain("A#"));
+
+    assertEquals("A#", command.getCmd());
+    assertNull(command.getDuration());
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"?", "V", ">", "<", " "})
   void givenDefaultMapper_whenMappingControl_thenReturnsConfigUpdateCommand(final String token) {

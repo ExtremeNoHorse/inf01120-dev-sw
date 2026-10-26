@@ -1,12 +1,14 @@
 package com.player.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 class PlayerConfigTest {
   private static final int TEST_OCTAVE_6 = 6;
+  private static final int TEST_OCTAVE_2 = 2;
   private static final int TEST_OCTAVE_5 = 5;
   private static final int TEST_OCTAVE_4 = 4;
   private static final int TEST_OCTAVE_3 = 3;
@@ -14,6 +16,8 @@ class PlayerConfigTest {
   private static final int TEST_OCTAVE_8 = 8;
 
   private static final int TEST_VOL_100 = 100;
+  private static final int TEST_VOL_3 = 3;
+  private static final int TEST_VOL_4 = 4;
   private static final int TEST_VOL_80 = 80;
   private static final int TEST_VOL_60 = 60;
   private static final int TEST_VOL_40 = 40;
@@ -21,10 +25,13 @@ class PlayerConfigTest {
 
   private static final int TEST_BPM_130 = 130;
   private static final int TEST_BPM_120 = 120;
+  private static final int TEST_BPM_121 = 121;
   private static final int TEST_HIGH_BPM = 999;
   private static final int TEST_NEG_BPM = -10;
 
   private static final int MIN_GM_INSTRUMENTS = 25;
+  private static final int TEST_INSTRUMENT_1 = 1;
+  private static final int TEST_INSTRUMENT_2 = 2;
 
   @Test
   void givenValidParameters_whenConstructed_thenValuesAreSet() {
@@ -173,5 +180,27 @@ class PlayerConfigTest {
     assertTrue(catalog.size() >= MIN_GM_INSTRUMENTS);
     assertTrue(catalog.containsKey(PlayerConfig.INSTRUMENT_CHURCH_ORGAN));
     assertTrue(catalog.containsKey(PlayerConfig.INSTRUMENT_TUBULAR_BELLS));
+  }
+
+  @Test
+  void givenConfigs_whenCompared_thenCoversEqualityBranches() {
+    final PlayerConfig config =
+        new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120);
+
+    assertTrue(config.equals(config));
+    assertFalse(config.equals(new Object()));
+    assertFalse(
+        config.equals(
+            new PlayerConfig(TEST_INSTRUMENT_2, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120)));
+    assertFalse(
+        config.equals(
+            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_3, TEST_VOL_3, TEST_BPM_120)));
+    assertFalse(
+        config.equals(
+            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_4, TEST_BPM_120)));
+    assertFalse(
+        config.equals(
+            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_121)));
+    assertEquals(config.hashCode(), config.hashCode());
   }
 }

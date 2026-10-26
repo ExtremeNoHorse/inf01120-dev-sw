@@ -139,6 +139,35 @@ class PlayerTest {
   }
 
   @Test
+  void givenDestinationWithoutParent_whenExport_thenCreatesValidMidiFile() throws IOException {
+    final Music music = new Music("exp-2", "Export Song", "C:3");
+    final Path targetPath = Path.of("coverage-" + System.nanoTime() + ".mid");
+
+    try {
+      final Path result = player.export(music, targetPath);
+
+      assertEquals(targetPath, result);
+      assertTrue(Files.exists(targetPath));
+    } finally {
+      Files.deleteIfExists(targetPath);
+    }
+  }
+
+  @Test
+  void givenDirectoryAsExportDestination_whenExport_thenThrowsPersistenceFailure(
+      @TempDir final Path tempDir) throws IOException {
+    final Path directory = tempDir.resolve("existing-directory");
+    Files.createDirectory(directory);
+
+    final TtmException exception =
+        assertThrows(
+            TtmException.class,
+            () -> player.export(new Music("exp-3", "Export Song", "C:3"), directory));
+
+    assertEquals(ErrorCode.PERSISTENCE_FAILURE, exception.getCode());
+  }
+
+  @Test
   void givenNullMusicOrPath_whenExport_thenThrowsTtmException(@TempDir final Path tempDir) {
     assertThrows(TtmException.class, () -> player.export(null, tempDir.resolve("out.mid")));
     assertThrows(TtmException.class, () -> player.export(new Music("1", "S", "A"), null));
