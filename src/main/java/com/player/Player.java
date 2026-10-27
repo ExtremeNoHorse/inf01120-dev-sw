@@ -22,22 +22,16 @@ import org.jfugue.pattern.Pattern;
 public final class Player {
   private final Interpreter interpreter;
   private final AudioEngine audioEngine;
-  private PlayerConfig playerConfig;
 
   /**
    * Constructs a new {@code Player} instance with injected dependencies.
    *
-   * @param interpreter the music interpreter
+   * @param interpreter the music interpreter, which holds the playback configuration
    * @param audioEngine the underlying audio engine
-   * @param playerConfig the playback configuration
    */
-  public Player(
-      final Interpreter interpreter,
-      final AudioEngine audioEngine,
-      final PlayerConfig playerConfig) {
+  public Player(final Interpreter interpreter, final AudioEngine audioEngine) {
     this.interpreter = Objects.requireNonNull(interpreter, "Interpreter cannot be null");
     this.audioEngine = Objects.requireNonNull(audioEngine, "AudioEngine cannot be null");
-    this.playerConfig = Objects.requireNonNull(playerConfig, "PlayerConfig cannot be null");
   }
 
   /**
@@ -50,7 +44,7 @@ public final class Player {
     if (music == null) {
       throw new TtmException(ErrorCode.INVALID_INPUT, "Music cannot be null for playback");
     }
-    final String pattern = interpreter.interpret(music.getContent(), playerConfig);
+    final String pattern = interpreter.interpret(music.getContent());
     audioEngine.play(pattern);
   }
 
@@ -122,7 +116,7 @@ public final class Player {
    * @throws NullPointerException if config is null
    */
   public void configure(final PlayerConfig config) {
-    this.playerConfig = Objects.requireNonNull(config, "PlayerConfig cannot be null");
+    interpreter.configure(config);
   }
 
   /**
@@ -139,7 +133,7 @@ public final class Player {
           ErrorCode.INVALID_INPUT, "Music and targetPath cannot be null for export");
     }
 
-    final String patternStr = interpreter.interpret(music.getContent(), playerConfig);
+    final String patternStr = interpreter.interpret(music.getContent());
     try {
       final Path parent = targetPath.getParent();
       if (parent != null && !Files.exists(parent)) {
@@ -164,13 +158,6 @@ public final class Player {
    * @return a new {@link PlayerConfig} instance with current settings
    */
   public PlayerConfig getPlayerConfig() {
-    return new PlayerConfig(
-        this.playerConfig.getInstrument(),
-        this.playerConfig.getOctave(),
-        this.playerConfig.getVolume(),
-        this.playerConfig.getBpm(),
-        this.playerConfig.getBaseOctave(),
-        this.playerConfig.getBaseVolume(),
-        this.playerConfig.getBaseInstrument());
+    return interpreter.getPlayerConfig();
   }
 }

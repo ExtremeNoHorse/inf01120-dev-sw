@@ -10,6 +10,7 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
+import com.player.interpreter.domain.DomainMapper;
 import com.player.repository.Music;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -99,9 +100,9 @@ class PlayerTest {
   @BeforeEach
   void setUp() {
     mockAudioEngine = new TestAudioEngine();
-    interpreter = new Interpreter();
-    final PlayerConfig config = PlayerConfig.forVoice(0, DEFAULT_TEST_BPM);
-    player = new Player(interpreter, mockAudioEngine, config);
+    interpreter =
+        new Interpreter(DomainMapper.createDefault(), PlayerConfig.forVoice(0, DEFAULT_TEST_BPM));
+    player = new Player(interpreter, mockAudioEngine);
   }
 
   @Test

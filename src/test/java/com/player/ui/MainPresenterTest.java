@@ -47,8 +47,7 @@ class MainPresenterTest {
     engine = new FakeEngine();
     view = new FakeView();
     library = new MusicLibrary(new FileMusicRepository(dir.resolve("musics").toString()));
-    player =
-        new Player(new Interpreter(), engine, PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+    player = new Player(new Interpreter(), engine);
     presenter = new MainPresenter(library, player, new InputValidator());
     presenter.attach(view);
   }

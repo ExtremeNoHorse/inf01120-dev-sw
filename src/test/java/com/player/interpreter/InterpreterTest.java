@@ -78,10 +78,10 @@ class InterpreterTest {
     final String result = interpreter.interpret(text);
 
     // Then
-    assertTrue(result.contains("V0 I6 C6qa100"));
-    assertTrue(result.contains("V1 I20 E5qa80"));
-    assertTrue(result.contains("V2 I0 G4qa60"));
-    assertTrue(result.contains("V3 I70 C3wa40"));
+    assertTrue(result.contains("V0 I6 :CE(7,100) C6qa100"));
+    assertTrue(result.contains("V1 I20 :CE(7,100) E5qa80"));
+    assertTrue(result.contains("V2 I0 :CE(7,100) G4qa60"));
+    assertTrue(result.contains("V3 I70 :CE(7,100) C3wa40"));
   }
 
   @Test
@@ -89,9 +89,9 @@ class InterpreterTest {
     final String text = String.join(System.lineSeparator(), "C:3", "   ", "D:3");
     final String result = interpreter.interpret(text);
 
-    assertTrue(result.contains("V0 I6 C6qa100"));
+    assertTrue(result.contains("V0 I6 :CE(7,100) C6qa100"));
     assertFalse(result.contains("V1 I20"));
-    assertTrue(result.contains("V2 I0 D4qa60"));
+    assertTrue(result.contains("V2 I0 :CE(7,100) D4qa60"));
   }
 
   @Test
@@ -103,7 +103,7 @@ class InterpreterTest {
     final String result = interpreter.interpret(text);
 
     // Then
-    assertTrue(result.contains("V0 I6 Rq Rq Rq A6qa100"));
+    assertTrue(result.contains("V0 I6 :CE(7,100) Rq Rq Rq A6qa100"));
   }
 
   @Test
@@ -177,7 +177,8 @@ class InterpreterTest {
     settings.setVolume(settings.getBaseVolume() / 2);
 
     // When
-    final String result = interpreter.interpret("C:3\nC:3", settings);
+    interpreter.configure(settings);
+    final String result = interpreter.interpret("C:3\nC:3");
 
     // Then: octaves go 6 -> 7 and 5 -> 6; velocities stay, channel volume becomes 50
     assertEquals("T90 V0 I6 :CE(7,50) C7qa100 V1 I20 :CE(7,50) C6qa80", result);
@@ -187,7 +188,9 @@ class InterpreterTest {
   void givenSettingsWithZeroVolume_whenInterpret_thenMutesChannelButKeepsVelocity() {
     final PlayerConfig settings = new PlayerConfig(0, 6, 0, 120);
 
-    assertEquals("T120 V0 I6 :CE(7,0) C6qa100", interpreter.interpret("C:3", settings));
+    interpreter.configure(settings);
+
+    assertEquals("T120 V0 I6 :CE(7,0) C6qa100", interpreter.interpret("C:3"));
   }
 
   @Test
@@ -198,7 +201,7 @@ class InterpreterTest {
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
-    assertEquals("T120 V0 I6", customInterpreter.interpret("C"));
+    assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("C"));
   }
 
   @Test
@@ -209,7 +212,7 @@ class InterpreterTest {
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
-    assertEquals("T120 V0 I6", customInterpreter.interpret("?"));
+    assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("?"));
   }
 
   @Test

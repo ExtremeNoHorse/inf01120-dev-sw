@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.player.audio.AudioEngine;
-import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
@@ -117,9 +116,7 @@ class AppTest {
   void setUp() {
     mockRepository = new InMemoryRepository();
     mockAudioEngine = new TestAudioEngine();
-    final Player player =
-        new Player(
-            new Interpreter(), mockAudioEngine, PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+    final Player player = new Player(new Interpreter(), mockAudioEngine);
     app = new App(new InputValidator(), mockRepository, player);
   }
 
@@ -147,9 +144,7 @@ class AppTest {
         input -> {
           throw new TtmException(ErrorCode.INVALID_INPUT, "forced validation failure");
         });
-    final Player player =
-        new Player(
-            new Interpreter(), mockAudioEngine, PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
+    final Player player = new Player(new Interpreter(), mockAudioEngine);
     final App failingApp = new App(failingValidator, mockRepository, player);
 
     assertEquals(1, failingApp.run(new String[] {PLAY_COMMAND, songFile.toString()}));

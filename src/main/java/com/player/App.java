@@ -35,8 +35,7 @@ public final class App {
         new Player(
             new Interpreter(
                 DomainMapper.createDefault(), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM)),
-            new JFuguePlayer(),
-            PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM)));
+            new JFuguePlayer()));
   }
 
   /**

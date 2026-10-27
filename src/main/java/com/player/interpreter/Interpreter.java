@@ -26,10 +26,9 @@ public final class Interpreter {
   private static final String WINDOWS_NEWLINE = "\r\n";
   private static final String SPACE = " ";
   private static final String CHANNEL_VOLUME = ":CE(7,%d)";
-  private static final int NO_CHANNEL_VOLUME = -1;
 
   private final DomainMapper mapper;
-  private final PlayerConfig playerConfig;
+  private PlayerConfig playerConfig;
   private StringBuilder pattern;
   private final List<List<Timeline.Event>> events = new ArrayList<>();
   private int lineStart;
@@ -45,12 +44,38 @@ public final class Interpreter {
    * Constructs an {@code Interpreter} with a specified domain mapper and base configuration.
    *
    * @param mapper the domain mapper to resolve commands
-   * @param playerConfig the base player configuration
+   * @param playerConfig the playback configuration
    */
   public Interpreter(final DomainMapper mapper, final PlayerConfig playerConfig) {
     this.mapper = Objects.requireNonNull(mapper, "DomainMapper cannot be null");
     this.playerConfig = Objects.requireNonNull(playerConfig, "PlayerConfig cannot be null");
     this.pattern = new StringBuilder();
+  }
+
+  /**
+   * Replaces the playback configuration used by the next interpretations.
+   *
+   * @param config the new playback configuration
+   * @throws NullPointerException if config is null
+   */
+  public void configure(final PlayerConfig config) {
+    this.playerConfig = Objects.requireNonNull(config, "PlayerConfig cannot be null");
+  }
+
+  /**
+   * Retrieves a copy of the current playback configuration.
+   *
+   * @return a new {@link PlayerConfig} instance with current settings
+   */
+  public PlayerConfig getPlayerConfig() {
+    return new PlayerConfig(
+        playerConfig.getInstrument(),
+        playerConfig.getOctave(),
+        playerConfig.getVolume(),
+        playerConfig.getBpm(),
+        playerConfig.getBaseOctave(),
+        playerConfig.getBaseVolume(),
+        playerConfig.getBaseInstrument());
   }
 
   /**
@@ -67,37 +92,19 @@ public final class Interpreter {
   }
 
   /**
-   * Interprets text into a polyphonic JFugue pattern string.
+   * Interprets text into a polyphonic JFugue pattern string using the current configuration.
+   *
+   * <p>The configuration's BPM is global. Its octave shifts every voice relative to the base
+   * octave, so each voice keeps its own register (soprano stays above bass). Its volume sets the
+   * MIDI channel volume of every voice, acting as a master volume over the note velocities (which
+   * the space command keeps doubling).
    *
    * @param text the input text, where each line corresponds to an independent voice
    * @return the compiled JFugue pattern string
    * @throws TtmException if input is null
    */
   public String interpret(final String text) {
-    return interpret(text, this.playerConfig, false);
-  }
-
-  /**
-   * Interprets text using the given user settings instead of the base configuration.
-   *
-   * <p>The settings' BPM is global. Octave shifts every voice relative to the settings' base
-   * octave, so each voice keeps its own register (soprano stays above bass). The volume sets the
-   * MIDI channel volume of every voice, acting as a master volume over the note velocities (which
-   * the space command keeps doubling). It is always written, so going back to the default volume
-   * also overrides a lower volume left in the synthesizer by a previous playback.
-   *
-   * @param text the input text, where each line corresponds to an independent voice
-   * @param settings the user playback settings
-   * @return the compiled JFugue pattern string
-   * @throws TtmException if input is null
-   */
-  public String interpret(final String text, final PlayerConfig settings) {
-    return interpret(text, settings, true);
-  }
-
-  private String interpret(
-      final String text, final PlayerConfig settings, final boolean withChannelVolume) {
-    Objects.requireNonNull(settings, "PlayerConfig cannot be null");
+    final PlayerConfig settings = this.playerConfig;
     events.clear();
     if (text == null) {
       throw new TtmException(ErrorCode.INVALID_INPUT, "Input text cannot be null");
@@ -109,14 +116,14 @@ public final class Interpreter {
     this.pattern = new StringBuilder();
     this.pattern.append("T").append(settings.getBpm()).append(SPACE);
 
-    final int channelVolume = withChannelVolume ? settings.getVolume() : NO_CHANNEL_VOLUME;
     final String[] lines = text.split("\\r?\\n");
 
     lineStart = 0;
     for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
       final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
-        processVoiceLine(rawLine, voiceIndex, voiceConfig(voiceIndex, settings), channelVolume);
+        processVoiceLine(
+            rawLine, voiceIndex, voiceConfig(voiceIndex, settings), settings.getVolume());
       }
       final int lineEnd = lineStart + rawLine.length();
       lineStart =
@@ -149,9 +156,7 @@ public final class Interpreter {
     charOffset = lineStart;
     pattern.append("V").append(voiceIndex).append(SPACE);
     pattern.append("I").append(voiceConfig.getInstrument()).append(SPACE);
-    if (channelVolume != NO_CHANNEL_VOLUME) {
-      pattern.append(String.format(CHANNEL_VOLUME, channelVolume)).append(SPACE);
-    }
+    pattern.append(String.format(CHANNEL_VOLUME, channelVolume)).append(SPACE);
 
     String line = rawLine;
 

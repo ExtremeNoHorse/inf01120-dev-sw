@@ -13,7 +13,8 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
    - `InputValidator`: Valida o texto-fonte contra regras parametrizáveis antes da execução.
 2. **Camada de Domínio / Interpretação**:
    - `Interpreter`: Lê o texto linha a linha, gerenciando as vozes polifônicas independentes e delays.
-     - `interpret(text, settings)` aplica as configurações do usuário: o BPM é global; a oitava desloca **todas** as vozes em relação à oitava base, mantendo o registro de cada uma (o soprano continua acima do baixo); o volume vira o volume do canal MIDI (`:CE(7,v)`) de cada voz, funcionando como volume geral. A intensidade das notas não serve para isso, porque o comando espaço a dobra até 127. `interpret(text)` continua gerando a mesma saída.
+     - É o único dono do `PlayerConfig` da reprodução. Recebe a configuração no construtor (injetada pelo `App`), e `configure(config)` troca a configuração das próximas interpretações.
+     - `interpret(text)` aplica essa configuração: o BPM é global; a oitava desloca **todas** as vozes em relação à oitava base, mantendo o registro de cada uma (o soprano continua acima do baixo); o volume vira o volume do canal MIDI (`:CE(7,v)`) de cada voz, funcionando como volume geral. A intensidade das notas não serve para isso, porque o comando espaço a dobra até 127.
      - `timeline(text)` devolve uma `Timeline`.
    - `Timeline`: Registra, para cada caractere que gera nota ou pausa, o tempo musical (em semínimas) em que ele começa e termina. Esse tempo não depende do BPM e corresponde aos ticks da sequência MIDI, por isso permite achar no texto o trecho que está tocando.
    - `DomainMapper`: Dicionário e resolvedor de comandos musicais.
@@ -22,7 +23,7 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
    - `MusicalDuration`: Enum que encapsula as figuras de tempo da partitura, com a duração de cada uma em semínimas (`getBeats()`).
    - `PlayerConfig`: Encapsula o estado musical (oitavas, volumes, instrumentos e BPM).
 3. **Camada de Áudio / Execução**:
-   - `Player`: Orquestrador de alto nível que conecta interpretação, reprodução e exportação. Aplica a própria configuração (`configure`) ao tocar e ao exportar, e oferece `seek`, as consultas de progresso e `timeline`.
+   - `Player`: Orquestrador de alto nível que conecta interpretação, reprodução e exportação. Não guarda configuração própria: `configure` e `getPlayerConfig` repassam para o `Interpreter`, então tocar e exportar usam sempre a mesma configuração. Oferece também `seek`, as consultas de progresso e `timeline`.
    - `AudioEngine`: Interface que abstrai o motor de áudio, incluindo a posição e a duração da reprodução (`getTickPosition`, `getTickLength`, `isActive`).
    - `JFuguePlayer`: Adaptador que isola a biblioteca externa JFugue. Monta cada sequência com um parser novo e inicia o sequenciador sem abrir thread. O parser compartilhado do JFugue não zera o tempo das vozes além da `V0`: a segunda reprodução de uma música com várias vozes começava atrasada e com o BPM antigo. Reinícios seguidos, como vários cliques no BPM, também não disputam mais o mesmo parser.
 4. **Camada de Persistência**:

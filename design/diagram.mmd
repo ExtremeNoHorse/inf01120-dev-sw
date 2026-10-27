@@ -101,7 +101,6 @@ classDiagram
     class Player {
         -Interpreter interpreter
         -AudioEngine audioEngine
-        -PlayerConfig playerConfig
         +void play(Music music)
         +void pause()
         +void resume()
@@ -120,8 +119,9 @@ classDiagram
         -DomainMapper mapper
         -PlayerConfig playerConfig
         -StringBuilder pattern
+        +void configure(PlayerConfig config)
+        +PlayerConfig getPlayerConfig()
         +String interpret(String text)
-        +String interpret(String text, PlayerConfig settings)
         +Timeline timeline(String text)
     }
 
