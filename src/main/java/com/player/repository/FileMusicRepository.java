@@ -3,18 +3,29 @@ package com.player.repository;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-/** File-system based implementation of {@link MusicRepository}. */
+/**
+ * File-system based implementation of {@link MusicRepository}. Each music is stored as {@code
+ * <id>.txt}, and the names live in a single {@code metadata.properties} that maps each id to its
+ * name.
+ */
 public final class FileMusicRepository implements MusicRepository {
   private static final String FILE_EXTENSION = ".txt";
+  private static final String METADATA_FILE = "metadata.properties";
+  private static final String METADATA_COMMENT = "Nome de cada musica, indexado pelo id";
+  private static final int SHORT_ID_LENGTH = 4;
   private final Path baseDir;
 
   /**
@@ -53,6 +64,11 @@ public final class FileMusicRepository implements MusicRepository {
     try {
       final String content = music.getContent() != null ? music.getContent() : "";
       Files.writeString(filePath, content);
+      if (music.getName() != null) {
+        final Properties names = loadNames();
+        names.setProperty(music.getId(), music.getName());
+        storeNames(names);
+      }
       return music;
     } catch (final IOException e) {
       throw new TtmException(
@@ -85,8 +101,7 @@ public final class FileMusicRepository implements MusicRepository {
           fileName.endsWith(FILE_EXTENSION)
               ? fileName.substring(0, fileName.length() - FILE_EXTENSION.length())
               : fileName;
-      final String name = id.length() >= 4 ? "Música " + id.substring(0, 4) : "Música " + id;
-      return new Music(id, name, content);
+      return new Music(id, loadNames().getProperty(id, defaultName(id)), content);
     } catch (final IOException e) {
       throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
     }
@@ -119,9 +134,35 @@ public final class FileMusicRepository implements MusicRepository {
     final Path filePath = baseDir.resolve(id + FILE_EXTENSION);
     try {
       Files.deleteIfExists(filePath);
+      final Properties names = loadNames();
+      if (names.remove(id) != null) {
+        storeNames(names);
+      }
     } catch (final IOException e) {
       throw new TtmException(
           ErrorCode.PERSISTENCE_FAILURE, "Erro ao deletar o arquivo: " + filePath, e);
     }
+  }
+
+  private Properties loadNames() throws IOException {
+    final Properties names = new Properties();
+    final Path metadata = baseDir.resolve(METADATA_FILE);
+    if (Files.exists(metadata)) {
+      try (Reader reader = Files.newBufferedReader(metadata, StandardCharsets.UTF_8)) {
+        names.load(reader);
+      }
+    }
+    return names;
+  }
+
+  private void storeNames(final Properties names) throws IOException {
+    try (Writer writer =
+        Files.newBufferedWriter(baseDir.resolve(METADATA_FILE), StandardCharsets.UTF_8)) {
+      names.store(writer, METADATA_COMMENT);
+    }
+  }
+
+  private static String defaultName(final String id) {
+    return "Música " + id.substring(0, Math.min(id.length(), SHORT_ID_LENGTH));
   }
 }

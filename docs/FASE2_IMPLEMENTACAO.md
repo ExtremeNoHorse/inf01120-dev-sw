@@ -10,10 +10,12 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 - O sistema permite carregar músicas a partir de arquivos `.txt` locais ou criá-las diretamente.
 - A persistência é gerenciada por `MusicRepository` e sua implementação concreta `FileMusicRepository`.
 - Se um arquivo de texto for editado, ele pode ser salvo novamente substituindo o arquivo original.
+- Os nomes das músicas ficam num único `metadata.properties` (formato nativo do Java, `id=nome`) na pasta das músicas, então renomear uma música persiste entre execuções.
 
 ### MUDANÇA 2 — Exportação de Arquivo MIDI
 - O coordenador `Player` possui o método `export(Music music, Path targetPath)`.
 - O caminho de destino e o nome do arquivo `.mid` são informados pelo usuário.
+- A exportação usa a mesma configuração da reprodução (oitava, BPM e volume definidos em `Player.configure`).
 - O arquivo é gerado através do motor JFugue (`MidiFileManager.savePatternToMidi`) utilizando *try-with-resources* para garantir fechamento determinístico de descritores no sistema operacional.
 
 ### MUDANÇA 3 — Catálogo de Instrumentos General MIDI
@@ -77,7 +79,7 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 
 ```text
 src/main/java/com/player/
-├── App.java                               # Composition root e interface CLI
+├── App.java                               # Composition root, CLI e abertura da GUI
 ├── Player.java                            # Coordenador de playback e exportação MIDI
 ├── audio/
 │   ├── AudioEngine.java                   # Interface de abstração do motor de áudio
@@ -89,6 +91,7 @@ src/main/java/com/player/
 │   └── TtmException.java                  # Exceção base do sistema
 ├── interpreter/
 │   ├── Interpreter.java                   # Interpretador de texto linha por linha / polifonia
+│   ├── Timeline.java                      # Em que tempo cada caractere soa (destaque na GUI)
 │   └── domain/
 │       ├── DomainMapper.java              # Tabela e fábrica de mapeamento de comandos
 │       ├── MusicalDuration.java           # Enum com as 7 durações musicais
@@ -96,6 +99,12 @@ src/main/java/com/player/
 │           ├── Command.java               # Interface do padrão Command
 │           ├── ConfigUpdate.java          # Comandos de alteração de configuração/instrumento
 │           └── Note.java                  # Comando de nota com suporte a acidentes e duração
+├── ui/
+│   ├── MainView.java                      # Contrato da tela principal (MVP, view passiva)
+│   ├── MainPresenter.java                 # Estado da tela e chamadas aos casos de uso
+│   └── swing/                             # Telas Swing dos croquis (sem regra de negócio)
+├── usecase/
+│   └── MusicLibrary.java                  # Facade: criar, importar, salvar, renomear, deletar
 ├── repository/
 │   ├── FileMusicRepository.java           # Persistência em arquivos no filesystem
 │   ├── Music.java                         # Entidade de música

@@ -78,20 +78,24 @@ class InterpreterTest {
     final String result = interpreter.interpret(text);
 
     // Then
-    assertTrue(result.contains("V0 I6 C6qa100"));
-    assertTrue(result.contains("V1 I20 E5qa80"));
-    assertTrue(result.contains("V2 I0 G4qa60"));
-    assertTrue(result.contains("V3 I70 C3wa40"));
+    assertTrue(result.contains("V0 I6 :CE(7,100) C6qa100"));
+    assertTrue(result.contains("V1 I20 :CE(7,100) E5qa80"));
+    assertTrue(result.contains("V2 I0 :CE(7,100) G4qa60"));
+    assertTrue(result.contains("V3 I70 :CE(7,100) C3wa40"));
   }
 
   @Test
   void givenBlankVoiceLine_whenInterpret_thenSkipsIt() {
+    // Given
     final String text = String.join(System.lineSeparator(), "C:3", "   ", "D:3");
+
+    // When
     final String result = interpreter.interpret(text);
 
-    assertTrue(result.contains("V0 I6 C6qa100"));
+    // Then
+    assertTrue(result.contains("V0 I6 :CE(7,100) C6qa100"));
     assertFalse(result.contains("V1 I20"));
-    assertTrue(result.contains("V2 I0 D4qa60"));
+    assertTrue(result.contains("V2 I0 :CE(7,100) D4qa60"));
   }
 
   @Test
@@ -103,7 +107,7 @@ class InterpreterTest {
     final String result = interpreter.interpret(text);
 
     // Then
-    assertTrue(result.contains("V0 I6 Rq Rq Rq A6qa100"));
+    assertTrue(result.contains("V0 I6 :CE(7,100) Rq Rq Rq A6qa100"));
   }
 
   @Test
@@ -170,29 +174,61 @@ class InterpreterTest {
   }
 
   @Test
+  void givenUserSettings_whenInterpret_thenShiftsEveryVoiceAndUsesGlobalBpm() {
+    // Given: voice 0 one octave up, half volume and 90 BPM
+    final PlayerConfig settings = PlayerConfig.forVoice(0, 90);
+    settings.setOctave(settings.getBaseOctave() + 1);
+    settings.setVolume(settings.getBaseVolume() / 2);
+
+    // When
+    interpreter.configure(settings);
+    final String result = interpreter.interpret("C:3\nC:3");
+
+    // Then: octaves go 6 -> 7 and 5 -> 6; velocities stay, channel volume becomes 50
+    assertEquals("T90 V0 I6 :CE(7,50) C7qa100 V1 I20 :CE(7,50) C6qa80", result);
+  }
+
+  @Test
+  void givenSettingsWithZeroVolume_whenInterpret_thenMutesChannelButKeepsVelocity() {
+    // Given
+    final PlayerConfig settings = new PlayerConfig(0, 6, 0, 120);
+
+    // When
+    interpreter.configure(settings);
+
+    // Then
+    assertEquals("T120 V0 I6 :CE(7,0) C6qa100", interpreter.interpret("C:3"));
+  }
+
+  @Test
   void givenMappedNullCommand_whenInterpret_thenSkipsTheToken() {
+    // Given
     final Map<String, Command> table = new HashMap<>();
     table.put("C", null);
     final Interpreter customInterpreter =
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
-    assertEquals("T120 V0 I6", customInterpreter.interpret("C"));
+    // When & Then
+    assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("C"));
   }
 
   @Test
   void givenCommandReturningNull_whenInterpret_thenSkipsItsResult() {
+    // Given
     final Map<String, Command> table = new HashMap<>();
     table.put("?", config -> null);
     final Interpreter customInterpreter =
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
-    assertEquals("T120 V0 I6", customInterpreter.interpret("?"));
+    // When & Then
+    assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("?"));
   }
 
   @Test
   void givenLowercaseOutsideNoteRange_whenInterpret_thenProducesRest() {
+    // Given & When & Then
     assertTrue(interpreter.interpret("h").contains("Rq"));
   }
 }

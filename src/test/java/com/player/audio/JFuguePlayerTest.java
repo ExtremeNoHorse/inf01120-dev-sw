@@ -10,10 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import javax.sound.midi.MidiUnavailableException;
-import org.jfugue.pattern.PatternProducer;
+import javax.sound.midi.Sequence;
 import org.jfugue.player.ManagedPlayer;
 import org.jfugue.player.Player;
 import org.junit.jupiter.api.Assumptions;
@@ -21,14 +19,18 @@ import org.junit.jupiter.api.Test;
 
 class JFuguePlayerTest {
   private static final int SEEK_TICK = 12;
+  private static final long TICK_LENGTH = 480;
+  private static final String TWO_VOICES = "T300 V0 C6q D6q V1 C5h";
 
   @Test
   void givenNullPlayer_whenConstructed_thenThrowsNullPointerException() {
+    // When & Then
     assertThrows(NullPointerException.class, () -> new JFuguePlayer(null));
   }
 
   @Test
   void givenUnavailableAudio_whenConstructed_thenThrowsAudioUnavailable() {
+    // When & Then
     try {
       new JFuguePlayer();
     } catch (final TtmException exception) {
@@ -42,14 +44,15 @@ class JFuguePlayerTest {
 
   @Test
   void givenFakePlayer_whenControlsInvoked_thenDelegatesWithoutHardware() throws Exception {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When & Then
     assertDoesNotThrow(() -> player.play(null));
     assertDoesNotThrow(() -> player.play(""));
     player.play("C6q");
-    assertTrue(fakePlayer.played.await(1, TimeUnit.SECONDS));
-    assertNotNull(fakePlayer.playedPattern);
+    assertNotNull(fakePlayer.managedPlayer.startedSequence);
 
     player.pause();
     assertTrue(fakePlayer.managedPlayer.paused);
@@ -66,42 +69,90 @@ class JFuguePlayerTest {
   }
 
   @Test
+  void givenFakePlayer_whenProgressQueried_thenReportsManagedPlayerState() {
+    // Given
+    final FakePlayer fakePlayer = new FakePlayer();
+    final JFuguePlayer player = new JFuguePlayer(fakePlayer);
+
+    // When & Then
+    player.seek(SEEK_TICK);
+    assertEquals(SEEK_TICK, player.getTickPosition());
+    assertEquals(TICK_LENGTH, player.getTickLength());
+    assertTrue(player.isActive());
+
+    player.stop();
+    assertFalse(player.isActive());
+  }
+
+  @Test
+  void givenTwoVoices_whenPlayedTwice_thenSecondSequenceDoesNotStartLate() {
+    // Given
+    final FakePlayer fakePlayer = new FakePlayer();
+    final JFuguePlayer player = new JFuguePlayer(fakePlayer);
+
+    // When
+    player.play(TWO_VOICES);
+    final long firstLength = fakePlayer.managedPlayer.startedSequence.getTickLength();
+    player.play(TWO_VOICES);
+
+    // Then
+    assertEquals(firstLength, fakePlayer.managedPlayer.startedSequence.getTickLength());
+  }
+
+  @Test
+  void givenSequencerFailure_whenPlay_thenThrowsAudioUnavailable() {
+    // Given
+    final FakePlayer fakePlayer = new FakePlayer();
+    fakePlayer.managedPlayer.failOnStart = true;
+    final JFuguePlayer player = new JFuguePlayer(fakePlayer);
+
+    // When & Then
+    final TtmException exception = assertThrows(TtmException.class, () -> player.play("C6q"));
+    assertEquals(ErrorCode.AUDIO_UNAVAILABLE, exception.getCode());
+  }
+
+  @Test
   void givenIdlePlayer_whenPauseAndResumeInvoked_thenDoesNotDelegate() {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     fakePlayer.managedPlayer.setPlaying(false);
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When
     player.pause();
     player.resume();
 
+    // Then
     assertFalse(fakePlayer.managedPlayer.paused);
     assertFalse(fakePlayer.managedPlayer.resumed);
   }
 
   private static final class FakePlayer extends Player {
     private final FakeManagedPlayer managedPlayer = new FakeManagedPlayer();
-    private final CountDownLatch played = new CountDownLatch(1);
-    private PatternProducer playedPattern;
 
     @Override
     public ManagedPlayer getManagedPlayer() {
       return managedPlayer;
     }
-
-    @Override
-    public void play(final PatternProducer patternProducer) {
-      playedPattern = patternProducer;
-      played.countDown();
-    }
   }
 
   private static final class FakeManagedPlayer extends ManagedPlayer {
+    private boolean failOnStart;
+    private Sequence startedSequence;
     private boolean playing = true;
     private boolean paused;
     private boolean resumed;
     private boolean finished;
     private boolean reset;
     private long seekTick;
+
+    @Override
+    public void start(final Sequence sequence) throws MidiUnavailableException {
+      if (failOnStart) {
+        throw new MidiUnavailableException("no sequencer");
+      }
+      startedSequence = sequence;
+    }
 
     @Override
     public boolean isPlaying() {
@@ -140,6 +191,26 @@ class JFuguePlayerTest {
     @Override
     public void seek(final long tick) {
       seekTick = tick;
+    }
+
+    @Override
+    public long getTickPosition() {
+      return seekTick;
+    }
+
+    @Override
+    public long getTickLength() {
+      return TICK_LENGTH;
+    }
+
+    @Override
+    public boolean isStarted() {
+      return true;
+    }
+
+    @Override
+    public boolean isFinished() {
+      return finished;
     }
   }
 }

@@ -5,6 +5,7 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
+import com.player.interpreter.Timeline;
 import com.player.repository.Music;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,22 +22,16 @@ import org.jfugue.pattern.Pattern;
 public final class Player {
   private final Interpreter interpreter;
   private final AudioEngine audioEngine;
-  private PlayerConfig playerConfig;
 
   /**
    * Constructs a new {@code Player} instance with injected dependencies.
    *
-   * @param interpreter the music interpreter
+   * @param interpreter the music interpreter, which holds the playback configuration
    * @param audioEngine the underlying audio engine
-   * @param playerConfig the playback configuration
    */
-  public Player(
-      final Interpreter interpreter,
-      final AudioEngine audioEngine,
-      final PlayerConfig playerConfig) {
+  public Player(final Interpreter interpreter, final AudioEngine audioEngine) {
     this.interpreter = Objects.requireNonNull(interpreter, "Interpreter cannot be null");
     this.audioEngine = Objects.requireNonNull(audioEngine, "AudioEngine cannot be null");
-    this.playerConfig = Objects.requireNonNull(playerConfig, "PlayerConfig cannot be null");
   }
 
   /**
@@ -51,6 +46,16 @@ public final class Player {
     }
     final String pattern = interpreter.interpret(music.getContent());
     audioEngine.play(pattern);
+  }
+
+  /**
+   * Computes when each character of the given text sounds, to follow the playback in the text.
+   *
+   * @param content the music text
+   * @return the timeline of the text
+   */
+  public Timeline timeline(final String content) {
+    return interpreter.timeline(content);
   }
 
   /** Pauses the currently playing track. */
@@ -69,13 +74,49 @@ public final class Player {
   }
 
   /**
+   * Moves playback to the given tick position.
+   *
+   * @param tick the target tick, as reported by {@link #getTickLength()}
+   */
+  public void seek(final int tick) {
+    audioEngine.seek(tick);
+  }
+
+  /**
+   * Reports the current playback position.
+   *
+   * @return current tick position
+   */
+  public long getTickPosition() {
+    return audioEngine.getTickPosition();
+  }
+
+  /**
+   * Reports the length of the music being played.
+   *
+   * @return total length in ticks
+   */
+  public long getTickLength() {
+    return audioEngine.getTickLength();
+  }
+
+  /**
+   * Checks whether a playback session is active (playing or paused).
+   *
+   * @return {@code true} while a music is loaded and not finished
+   */
+  public boolean isActive() {
+    return audioEngine.isActive();
+  }
+
+  /**
    * Reconfigures the player playback settings.
    *
    * @param config the new player configuration
    * @throws NullPointerException if config is null
    */
   public void configure(final PlayerConfig config) {
-    this.playerConfig = Objects.requireNonNull(config, "PlayerConfig cannot be null");
+    interpreter.configure(config);
   }
 
   /**
@@ -117,13 +158,6 @@ public final class Player {
    * @return a new {@link PlayerConfig} instance with current settings
    */
   public PlayerConfig getPlayerConfig() {
-    return new PlayerConfig(
-        this.playerConfig.getInstrument(),
-        this.playerConfig.getOctave(),
-        this.playerConfig.getVolume(),
-        this.playerConfig.getBpm(),
-        this.playerConfig.getBaseOctave(),
-        this.playerConfig.getBaseVolume(),
-        this.playerConfig.getBaseInstrument());
+    return interpreter.getPlayerConfig();
   }
 }

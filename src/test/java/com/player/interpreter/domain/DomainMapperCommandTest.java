@@ -10,9 +10,11 @@ class DomainMapperCommandTest {
 
   @Test
   void givenDefaultMapper_whenMappingTempoControls_thenUpdatesBpm() {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
     final PlayerConfig config = PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM);
 
+    // When & Then
     assertEquals(
         "T" + (PlayerConfig.DEFAULT_BPM + PlayerConfig.BPM_DELTA),
         mapper.toDomain(">").execute(config));
@@ -24,10 +26,12 @@ class DomainMapperCommandTest {
 
   @Test
   void givenDefaultMapper_whenMappingVoiceControls_thenUpdatesOctaveAndVolume() {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
     final PlayerConfig config = PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM);
     final int baseOctave = config.getOctave();
 
+    // When & Then
     mapper.toDomain("?").execute(config);
     assertEquals(baseOctave + 1, config.getOctave());
 
@@ -40,9 +44,11 @@ class DomainMapperCommandTest {
 
   @Test
   void givenDefaultMapper_whenMappingInstrumentControls_thenReturnsInstrumentTokens() {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
     final PlayerConfig config = PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM);
 
+    // When & Then
     assertEquals(
         INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_BANDONEON,
         mapper.toDomain("!").execute(config));

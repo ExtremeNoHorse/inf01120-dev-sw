@@ -10,6 +10,7 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
+import com.player.interpreter.domain.DomainMapper;
 import com.player.repository.Music;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,6 +61,21 @@ class PlayerTest {
       this.seekIndex = index;
     }
 
+    @Override
+    public long getTickPosition() {
+      return 0;
+    }
+
+    @Override
+    public long getTickLength() {
+      return 0;
+    }
+
+    @Override
+    public boolean isActive() {
+      return false;
+    }
+
     public String getPlayedPattern() {
       return playedPattern;
     }
@@ -84,16 +100,20 @@ class PlayerTest {
   @BeforeEach
   void setUp() {
     mockAudioEngine = new TestAudioEngine();
-    interpreter = new Interpreter();
-    final PlayerConfig config = PlayerConfig.forVoice(0, DEFAULT_TEST_BPM);
-    player = new Player(interpreter, mockAudioEngine, config);
+    interpreter =
+        new Interpreter(DomainMapper.createDefault(), PlayerConfig.forVoice(0, DEFAULT_TEST_BPM));
+    player = new Player(interpreter, mockAudioEngine);
   }
 
   @Test
   void givenMusic_whenPlay_thenInterpretsAndDelegatesToAudioEngine() {
+    // Given
     final Music music = new Music("m1", "Song", "C:3D:3");
+
+    // When
     player.play(music);
 
+    // Then
     assertNotNull(mockAudioEngine.getPlayedPattern());
     assertTrue(mockAudioEngine.getPlayedPattern().contains("C6qa100"));
     assertTrue(mockAudioEngine.getPlayedPattern().contains("D6qa100"));
@@ -101,12 +121,14 @@ class PlayerTest {
 
   @Test
   void givenNullMusic_whenPlay_thenThrowsTtmException() {
+    // When & Then
     final TtmException ex = assertThrows(TtmException.class, () -> player.play(null));
     assertEquals(ErrorCode.INVALID_INPUT, ex.getCode());
   }
 
   @Test
   void playbackControls_delegateToAudioEngine() {
+    // When & Then
     player.pause();
     assertTrue(mockAudioEngine.isPaused());
 
@@ -119,19 +141,27 @@ class PlayerTest {
 
   @Test
   void givenNewConfig_whenConfigure_thenUpdatesPlayerConfig() {
+    // Given
     final PlayerConfig newConfig = new PlayerConfig(10, NEW_OCTAVE, NEW_VOLUME, NEW_BPM);
+
+    // When
     player.configure(newConfig);
+
+    // Then
     assertEquals(newConfig, player.getPlayerConfig());
   }
 
   @Test
   void givenMusicAndDestination_whenExport_thenCreatesValidMidiFile(@TempDir final Path tempDir)
       throws IOException {
+    // Given
     final Music music = new Music("exp-1", "Export Song", "C:3E:3G:3");
     final Path targetPath = tempDir.resolve("output").resolve("exported_music.mid");
 
+    // When
     final Path result = player.export(music, targetPath);
 
+    // Then
     assertEquals(targetPath, result);
     assertTrue(Files.exists(targetPath));
     assertTrue(Files.size(targetPath) > 0);
@@ -140,12 +170,15 @@ class PlayerTest {
 
   @Test
   void givenDestinationWithoutParent_whenExport_thenCreatesValidMidiFile() throws IOException {
+    // Given
     final Music music = new Music("exp-2", "Export Song", "C:3");
     final Path targetPath = Path.of("coverage-" + System.nanoTime() + ".mid");
 
     try {
+      // When
       final Path result = player.export(music, targetPath);
 
+      // Then
       assertEquals(targetPath, result);
       assertTrue(Files.exists(targetPath));
     } finally {
@@ -156,9 +189,11 @@ class PlayerTest {
   @Test
   void givenDirectoryAsExportDestination_whenExport_thenThrowsPersistenceFailure(
       @TempDir final Path tempDir) throws IOException {
+    // Given
     final Path directory = tempDir.resolve("existing-directory");
     Files.createDirectory(directory);
 
+    // When & Then
     final TtmException exception =
         assertThrows(
             TtmException.class,
@@ -169,6 +204,7 @@ class PlayerTest {
 
   @Test
   void givenNullMusicOrPath_whenExport_thenThrowsTtmException(@TempDir final Path tempDir) {
+    // When & Then
     assertThrows(TtmException.class, () -> player.export(null, tempDir.resolve("out.mid")));
     assertThrows(TtmException.class, () -> player.export(new Music("1", "S", "A"), null));
   }

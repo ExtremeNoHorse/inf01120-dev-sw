@@ -13,20 +13,28 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
    - `InputValidator`: Valida o texto-fonte contra regras parametrizáveis antes da execução.
 2. **Camada de Domínio / Interpretação**:
    - `Interpreter`: Lê o texto linha a linha, gerenciando as vozes polifônicas independentes e delays.
+     - É o único dono do `PlayerConfig` da reprodução. Recebe a configuração no construtor (injetada pelo `App`), e `configure(config)` troca a configuração das próximas interpretações.
+     - `interpret(text)` aplica essa configuração: o BPM é global; a oitava desloca **todas** as vozes em relação à oitava base, mantendo o registro de cada uma (o soprano continua acima do baixo); o volume vira o volume do canal MIDI (`:CE(7,v)`) de cada voz, funcionando como volume geral. A intensidade das notas não serve para isso, porque o comando espaço a dobra até 127.
+     - `timeline(text)` devolve uma `Timeline`.
+   - `Timeline`: Registra, para cada caractere que gera nota ou pausa, o tempo musical (em semínimas) em que ele começa e termina. Esse tempo não depende do BPM e corresponde aos ticks da sequência MIDI, por isso permite achar no texto o trecho que está tocando.
    - `DomainMapper`: Dicionário e resolvedor de comandos musicais.
    - `Command`: Interface que encapsula ações musicais sem acoplamento reverso.
    - `Note` e `ConfigUpdate`: Implementações concretas de comandos.
-   - `MusicalDuration`: Enum que encapsula as figuras de tempo da partitura.
+   - `MusicalDuration`: Enum que encapsula as figuras de tempo da partitura, com a duração de cada uma em semínimas (`getBeats()`).
    - `PlayerConfig`: Encapsula o estado musical (oitavas, volumes, instrumentos e BPM).
 3. **Camada de Áudio / Execução**:
-   - `Player`: Orquestrador de alto nível que conecta interpretação, reprodução e exportação.
-   - `AudioEngine`: Interface que abstrai o motor de áudio.
-   - `JFuguePlayer`: Adaptador que isola a biblioteca externa JFugue.
+   - `Player`: Orquestrador de alto nível que conecta interpretação, reprodução e exportação. Não guarda configuração própria: `configure` e `getPlayerConfig` repassam para o `Interpreter`, então tocar e exportar usam sempre a mesma configuração. Oferece também `seek`, as consultas de progresso e `timeline`.
+   - `AudioEngine`: Interface que abstrai o motor de áudio, incluindo a posição e a duração da reprodução (`getTickPosition`, `getTickLength`, `isActive`).
+   - `JFuguePlayer`: Adaptador que isola a biblioteca externa JFugue. Monta cada sequência com um parser novo e inicia o sequenciador sem abrir thread. O parser compartilhado do JFugue não zera o tempo das vozes além da `V0`: a segunda reprodução de uma música com várias vozes começava atrasada e com o BPM antigo. Reinícios seguidos, como vários cliques no BPM, também não disputam mais o mesmo parser.
 4. **Camada de Persistência**:
    - `Music`: Entidade que representa uma composição textual e seu estado.
    - `MusicRepository`: Interface para operações de CRUD e leitura por caminho.
-   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`).
-5. **Tratamento Centralizado de Erros**:
+   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`). Cada música é um `<id>.txt`, e os nomes ficam num único `metadata.properties` (`id=nome`, lido e gravado com `java.util.Properties`, sem dependência nova). Assim o "renomear" sobrevive entre execuções. Um `.txt` sem entrada no índice aparece como "Música " + o início do id.
+5. **Camada de Apresentação (GUI Swing)** — ver [INTERFACE_GRAFICA.md](INTERFACE_GRAFICA.md):
+   - `MusicLibrary`: *Facade* com os casos de uso da lista de músicas.
+   - `MainView` / `MainPresenter`: padrão MVP; o presenter não depende de Swing e é testado com uma view falsa.
+   - `ui.swing.*`: telas dos croquis, sem regra de negócio.
+6. **Tratamento Centralizado de Erros**:
    - `TtmException`: Exceção não-checada de domínio.
    - `ErrorCode`: Enum que tipifica causas de erro (`INVALID_INPUT`, `PERSISTENCE_FAILURE`, etc.).
 
