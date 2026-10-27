@@ -89,6 +89,7 @@ src/main/java/com/player/
 │   └── TtmException.java                  # Exceção base do sistema
 ├── interpreter/
 │   ├── Interpreter.java                   # Interpretador de texto linha por linha / polifonia
+│   ├── Timeline.java                      # Em que tempo cada caractere soa (destaque na GUI)
 │   └── domain/
 │       ├── DomainMapper.java              # Tabela e fábrica de mapeamento de comandos
 │       ├── MusicalDuration.java           # Enum com as 7 durações musicais
@@ -99,7 +100,6 @@ src/main/java/com/player/
 ├── ui/
 │   ├── MainView.java                      # Contrato da tela principal (MVP, view passiva)
 │   ├── MainPresenter.java                 # Estado da tela e chamadas aos casos de uso
-│   ├── TextProgress.java                  # Progresso -> posição destacada no texto
 │   └── swing/                             # Telas Swing dos croquis (sem regra de negócio)
 ├── usecase/
 │   └── MusicLibrary.java                  # Facade: criar, importar, salvar, renomear, deletar

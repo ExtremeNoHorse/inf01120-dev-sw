@@ -4,7 +4,10 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.domain.DomainMapper;
+import com.player.interpreter.domain.MusicalDuration;
 import com.player.interpreter.domain.commands.Command;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +19,11 @@ import java.util.regex.Pattern;
 public final class Interpreter {
   private static final Pattern DELAY_PATTERN = Pattern.compile("^\\[(\\d+)]\\s*");
   private static final Pattern NOTE_TOKEN_PATTERN = Pattern.compile("^([A-G][#b]?(?::[1-7])?)");
+  // Notes without an explicit duration have no symbol: JFugue plays them as quarter notes.
+  private static final Pattern SOUND_TOKEN_PATTERN =
+      Pattern.compile("^(?:R|[A-G][#b]?\\d+)([whqistx]?)");
   private static final String REST_TOKEN = "Rq";
+  private static final String WINDOWS_NEWLINE = "\r\n";
   private static final String SPACE = " ";
   private static final String CHANNEL_VOLUME = ":CE(7,%d)";
   private static final int NO_CHANNEL_VOLUME = -1;
@@ -24,6 +31,10 @@ public final class Interpreter {
   private final DomainMapper mapper;
   private final PlayerConfig playerConfig;
   private StringBuilder pattern;
+  private final List<List<Timeline.Event>> events = new ArrayList<>();
+  private int lineStart;
+  private int charOffset;
+  private double beat;
 
   /** Constructs an {@code Interpreter} using the default mapper and configuration. */
   public Interpreter() {
@@ -40,6 +51,19 @@ public final class Interpreter {
     this.mapper = Objects.requireNonNull(mapper, "DomainMapper cannot be null");
     this.playerConfig = Objects.requireNonNull(playerConfig, "PlayerConfig cannot be null");
     this.pattern = new StringBuilder();
+  }
+
+  /**
+   * Computes when each character of the text sounds, so the playback position can be traced back to
+   * the source text.
+   *
+   * @param text the input text, where each line corresponds to an independent voice
+   * @return the timeline with one entry per non-blank line
+   * @throws TtmException if input is null
+   */
+  public Timeline timeline(final String text) {
+    interpret(text);
+    return new Timeline(events);
   }
 
   /**
@@ -74,6 +98,7 @@ public final class Interpreter {
   private String interpret(
       final String text, final PlayerConfig settings, final boolean withChannelVolume) {
     Objects.requireNonNull(settings, "PlayerConfig cannot be null");
+    events.clear();
     if (text == null) {
       throw new TtmException(ErrorCode.INVALID_INPUT, "Input text cannot be null");
     }
@@ -87,11 +112,15 @@ public final class Interpreter {
     final int channelVolume = withChannelVolume ? settings.getVolume() : NO_CHANNEL_VOLUME;
     final String[] lines = text.split("\\r?\\n");
 
+    lineStart = 0;
     for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
       final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
         processVoiceLine(rawLine, voiceIndex, voiceConfig(voiceIndex, settings), channelVolume);
       }
+      final int lineEnd = lineStart + rawLine.length();
+      lineStart =
+          lineEnd + (text.startsWith(WINDOWS_NEWLINE, lineEnd) ? WINDOWS_NEWLINE.length() : 1);
     }
 
     return this.pattern.toString().trim();
@@ -115,6 +144,9 @@ public final class Interpreter {
       final int voiceIndex,
       final PlayerConfig voiceConfig,
       final int channelVolume) {
+    events.add(new ArrayList<>());
+    beat = 0;
+    charOffset = lineStart;
     pattern.append("V").append(voiceIndex).append(SPACE);
     pattern.append("I").append(voiceConfig.getInstrument()).append(SPACE);
     if (channelVolume != NO_CHANNEL_VOLUME) {
@@ -128,18 +160,20 @@ public final class Interpreter {
     if (delayMatcher.find()) {
       final int delayBeats = Integer.parseInt(delayMatcher.group(1));
       for (int i = 0; i < delayBeats; i++) {
-        pattern.append(REST_TOKEN).append(SPACE);
+        appendToken(REST_TOKEN);
       }
       line = line.substring(delayMatcher.end());
     }
 
-    processLineCharacters(line, voiceConfig);
+    processLineCharacters(line, voiceConfig, lineStart + rawLine.length() - line.length());
   }
 
-  private void processLineCharacters(final String line, final PlayerConfig voiceConfig) {
+  private void processLineCharacters(
+      final String line, final PlayerConfig voiceConfig, final int firstOffset) {
     String lastNoteToken = null;
     int index = 0;
     while (index < line.length()) {
+      charOffset = firstOffset + index;
       final String remainder = line.substring(index);
 
       // 1. Try to match structured note (A-G with optional #/b and :duration)
@@ -167,7 +201,7 @@ public final class Interpreter {
     }
     final String result = cmd.execute(voiceConfig);
     if (result != null && !result.isEmpty()) {
-      pattern.append(result).append(SPACE);
+      appendToken(result);
       return result;
     }
     return null;
@@ -177,7 +211,7 @@ public final class Interpreter {
       final char ch, final PlayerConfig voiceConfig, final String lastNoteToken) {
     // 2. Lowercase note letters: silence / rest
     if (ch >= 'a' && ch <= 'g') {
-      pattern.append(REST_TOKEN).append(SPACE);
+      appendToken(REST_TOKEN);
       return null;
     }
 
@@ -190,7 +224,18 @@ public final class Interpreter {
     }
 
     // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
-    pattern.append(Objects.requireNonNullElse(lastNoteToken, REST_TOKEN)).append(SPACE);
+    appendToken(Objects.requireNonNullElse(lastNoteToken, REST_TOKEN));
     return lastNoteToken;
+  }
+
+  /** Appends a token to the pattern and, if it is a note or a rest, records when it sounds. */
+  private void appendToken(final String token) {
+    pattern.append(token).append(SPACE);
+    final Matcher sound = SOUND_TOKEN_PATTERN.matcher(token);
+    if (sound.find()) {
+      final double end = beat + MusicalDuration.fromJfugueToken(sound.group(1)).getBeats();
+      events.getLast().add(new Timeline.Event(charOffset, beat, end));
+      beat = end;
+    }
   }
 }

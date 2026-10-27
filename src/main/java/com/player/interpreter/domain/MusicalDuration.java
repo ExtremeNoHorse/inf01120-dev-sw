@@ -24,6 +24,8 @@ public enum MusicalDuration {
   THIRTY_SECOND(6, "t"),
   SIXTY_FOURTH(7, "x");
 
+  private static final double WHOLE_NOTE_BEATS = 4.0;
+
   private final int id;
   private final String jfugueToken;
 
@@ -48,6 +50,31 @@ public enum MusicalDuration {
    */
   public String getJfugueToken() {
     return jfugueToken;
+  }
+
+  /**
+   * Length of the figure in beats (quarter notes): a whole note lasts 4 and each next figure lasts
+   * half of the previous one.
+   *
+   * @return the number of beats
+   */
+  public double getBeats() {
+    return WHOLE_NOTE_BEATS / (1 << (id - 1));
+  }
+
+  /**
+   * Finds the {@link MusicalDuration} matching the given JFugue duration symbol.
+   *
+   * @param jfugueToken the JFugue symbol (e.g., "q")
+   * @return the matching {@link MusicalDuration}, or {@code QUARTER_NOTE} as default
+   */
+  public static MusicalDuration fromJfugueToken(final String jfugueToken) {
+    for (final MusicalDuration duration : values()) {
+      if (duration.getJfugueToken().equals(jfugueToken)) {
+        return duration;
+      }
+    }
+    return QUARTER_NOTE;
   }
 
   /**

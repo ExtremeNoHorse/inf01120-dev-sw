@@ -5,6 +5,7 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.Interpreter;
+import com.player.interpreter.Timeline;
 import com.player.repository.Music;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,6 +52,16 @@ public final class Player {
     }
     final String pattern = interpreter.interpret(music.getContent(), playerConfig);
     audioEngine.play(pattern);
+  }
+
+  /**
+   * Computes when each character of the given text sounds, to follow the playback in the text.
+   *
+   * @param content the music text
+   * @return the timeline of the text
+   */
+  public Timeline timeline(final String content) {
+    return interpreter.timeline(content);
   }
 
   /** Pauses the currently playing track. */

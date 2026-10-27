@@ -22,7 +22,7 @@ classDiagram
     MainPresenter --> MusicLibrary
     MainPresenter --> Player
     MainPresenter --> InputValidator
-    MainPresenter ..> TextProgress
+    MainPresenter ..> Timeline
     MusicLibrary --> MusicRepository
 
     App *-- InputValidator
@@ -33,6 +33,7 @@ classDiagram
     MusicRepository o-- Music
 
     Player *-- Interpreter
+    Interpreter ..> Timeline : cria
     Player *-- AudioEngine
     JFuguePlayer *-- ManagedPlayer
     AudioEngine <|.. JFuguePlayer
@@ -107,6 +108,7 @@ classDiagram
         +void stop()
         +void configure(PlayerConfig config)
         +void seek(int tick)
+        +Timeline timeline(String content)
         +long getTickPosition()
         +long getTickLength()
         +boolean isActive()
@@ -120,6 +122,7 @@ classDiagram
         -StringBuilder pattern
         +String interpret(String text)
         +String interpret(String text, PlayerConfig settings)
+        +Timeline timeline(String text)
     }
 
     class DomainMapper {
@@ -245,12 +248,14 @@ classDiagram
         +static void open(MainPresenter presenter)
     }
 
-    class TextProgress {
-        +static List~Integer~ offsets(String text, double fraction)
+    class Timeline {
+        -List~List~Event~~ voices
+        -double length
+        +double length()
+        +List~Integer~ offsetsAt(double fraction)
     }
 
     class JFuguePlayer {
-        -Player player
         -ManagedPlayer managedPlayer
         +void play(String pattern)
         +void pause()

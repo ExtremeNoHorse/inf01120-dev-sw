@@ -3,6 +3,7 @@ package com.player.ui;
 import com.player.Player;
 import com.player.config.PlayerConfig;
 import com.player.exception.TtmException;
+import com.player.interpreter.Timeline;
 import com.player.repository.Music;
 import com.player.usecase.MusicLibrary;
 import com.player.validation.InputValidator;
@@ -29,7 +30,7 @@ public final class MainPresenter {
   private final InputValidator validator;
   private MainView view;
   private Music current;
-  private String playingText = "";
+  private Timeline timeline = new Timeline(List.of());
   private PlaybackState state = PlaybackState.STOPPED;
   private boolean sessionStarted;
   private long pendingSeek = NO_PENDING_SEEK;
@@ -249,8 +250,9 @@ public final class MainPresenter {
     if (current == null) {
       return;
     }
-    playingText = view.editorText();
-    validator.validate(playingText);
+    final String text = view.editorText();
+    validator.validate(text);
+    timeline = player.timeline(text);
     player.play(withEditorText(current));
     sessionStarted = false;
     setState(PlaybackState.PLAYING);
@@ -295,7 +297,7 @@ public final class MainPresenter {
     if (length > 0) {
       final double fraction = (double) player.getTickPosition() / length;
       view.showProgress((int) (fraction * PROGRESS_SCALE));
-      view.highlight(TextProgress.offsets(playingText, fraction));
+      view.highlight(timeline.offsetsAt(fraction));
     }
   }
 
