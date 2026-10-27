@@ -51,17 +51,12 @@ As dependências apontam só para dentro: a tela conhece o presenter, o presente
 | **MVP (Passive View)** | `MainView` + `MainPresenter` + `MainWindow` | A tela só desenha e repassa eventos. O estado e as decisões ficam no presenter, que pode ser testado sem abrir janela. |
 | **Facade** | `MusicLibrary` | Um ponto único para os casos de uso da lista (criar, importar, salvar, renomear, deletar e listar). |
 | **Observer** | listeners Swing e `javax.swing.Timer` → `presenter.onTick()` | A tela avisa o presenter dos eventos. O timer consulta o progresso a cada 100 ms. |
-| **Adapter** | `JFuguePlayer` (já existia) | Isola o JFugue atrás de `AudioEngine`. Foram adicionados apenas `getTickPosition`, `getTickLength` e `isActive`. |
+| **Adapter** | `JFuguePlayer` (já existia) | Isola o JFugue atrás de `AudioEngine`, que ganhou as consultas de progresso. |
 | **Command** | `Command` do interpretador (já existia) | Não foi alterado. |
 
 ## Mudanças no backend
 
-1. **`FileMusicRepository`** passou a persistir o nome em `<id>.name`, ao lado de `<id>.txt`. Antes o nome era derivado do id e o "renomear" se perderia.
-2. **`Interpreter.interpret(text, settings)`**: o BPM vem dos settings. A oitava desloca **todas** as vozes em relação ao valor base, então cada voz mantém o seu registro (o soprano continua acima do baixo). O volume vira o volume do canal MIDI (`:CE(7,v)`) de cada voz, funcionando como volume geral. Não dá para mexer na intensidade das notas, porque o comando espaço a dobra até 127 e anularia o controle. `interpret(text)` continua igual.
-3. **`Player`** passou a aplicar a própria configuração (`configure`) ao tocar e exportar. Antes ela era guardada mas ignorada. Também foram adicionados `seek` e as consultas de progresso.
-4. **`AudioEngine`** ganhou `getTickPosition`, `getTickLength` e `isActive`.
-5. **`Interpreter.timeline(text)`** registra, para cada caractere que gera nota ou pausa, o tempo musical (em semínimas) em que ele começa e termina (`Timeline`). O tempo musical não depende do BPM e corresponde aos ticks da sequência MIDI, então o destaque segue a posição real da música. Para isso, `MusicalDuration` ganhou `getBeats()` e `fromJfugueToken()`.
-6. **`JFuguePlayer.play`** monta a sequência com um parser novo a cada chamada e inicia o sequenciador sem abrir thread. O parser compartilhado do JFugue não zera o tempo das vozes além da `V0`, então a segunda reprodução de uma música com várias vozes começava atrasada e com o BPM antigo. Além disso, as threads de reinícios seguidos (cliques no BPM) disputavam o mesmo parser.
+A interface precisou de alguns ajustes no backend: persistir o nome, aplicar as configurações ao tocar e exportar, consultar o progresso, a `Timeline` do destaque e a correção do `JFuguePlayer`. Eles estão documentados junto de cada classe em [ARQUITETURA.md](ARQUITETURA.md) e nas mudanças 1 e 2 de [FASE2_IMPLEMENTACAO.md](FASE2_IMPLEMENTACAO.md).
 
 ## Suposições e limitações
 

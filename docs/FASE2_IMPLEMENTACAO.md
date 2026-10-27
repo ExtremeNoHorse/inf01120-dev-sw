@@ -10,10 +10,12 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 - O sistema permite carregar músicas a partir de arquivos `.txt` locais ou criá-las diretamente.
 - A persistência é gerenciada por `MusicRepository` e sua implementação concreta `FileMusicRepository`.
 - Se um arquivo de texto for editado, ele pode ser salvo novamente substituindo o arquivo original.
+- O nome da música é salvo em `<id>.name`, ao lado de `<id>.txt`, então renomear uma música persiste entre execuções.
 
 ### MUDANÇA 2 — Exportação de Arquivo MIDI
 - O coordenador `Player` possui o método `export(Music music, Path targetPath)`.
 - O caminho de destino e o nome do arquivo `.mid` são informados pelo usuário.
+- A exportação usa a mesma configuração da reprodução (oitava, BPM e volume definidos em `Player.configure`).
 - O arquivo é gerado através do motor JFugue (`MidiFileManager.savePatternToMidi`) utilizando *try-with-resources* para garantir fechamento determinístico de descritores no sistema operacional.
 
 ### MUDANÇA 3 — Catálogo de Instrumentos General MIDI
