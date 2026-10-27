@@ -62,11 +62,23 @@ class FileMusicRepositoryTest {
   }
 
   @Test
-  void givenNamedMusic_whenDeleted_thenRemovesNameFileToo() {
+  void givenNamedMusic_whenDeleted_thenRemovesItsNameFromMetadata() throws IOException {
+    repository.save(new Music("kept", "Kept", "A"));
     repository.save(new Music("gone", "Some", "A"));
     repository.deleteById("gone");
 
-    assertFalse(Files.exists(tempDir.resolve("gone.name")));
+    final String metadata = Files.readString(tempDir.resolve("metadata.properties"));
+    assertTrue(metadata.contains("kept=Kept"));
+    assertFalse(metadata.contains("gone="));
+    assertEquals(List.of("Kept"), repository.findAll().stream().map(Music::getName).toList());
+  }
+
+  @Test
+  void givenNamesWithSpecialCharacters_whenSaveAndReload_thenKeepsThemExactly() {
+    final String name = "Rock/Pop: ação = 100% #1";
+    repository.save(new Music("special", name, "A"));
+
+    assertEquals(name, new FileMusicRepository(tempDir.toString()).getById("special").getName());
   }
 
   @Test

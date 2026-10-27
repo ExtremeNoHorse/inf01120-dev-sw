@@ -29,7 +29,7 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
 4. **Camada de Persistência**:
    - `Music`: Entidade que representa uma composição textual e seu estado.
    - `MusicRepository`: Interface para operações de CRUD e leitura por caminho.
-   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`). O nome da música fica em `<id>.name`, ao lado de `<id>.txt`, para sobreviver a um "renomear".
+   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`). Cada música é um `<id>.txt`, e os nomes ficam num único `metadata.properties` (`id=nome`, lido e gravado com `java.util.Properties`, sem dependência nova). Assim o "renomear" sobrevive entre execuções. Um `.txt` sem entrada no índice aparece como "Música " + o início do id.
 5. **Camada de Apresentação (GUI Swing)** — ver [INTERFACE_GRAFICA.md](INTERFACE_GRAFICA.md):
    - `MusicLibrary`: *Facade* com os casos de uso da lista de músicas.
    - `MainView` / `MainPresenter`: padrão MVP; o presenter não depende de Swing e é testado com uma view falsa.

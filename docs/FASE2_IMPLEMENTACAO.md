@@ -10,7 +10,7 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
 - O sistema permite carregar músicas a partir de arquivos `.txt` locais ou criá-las diretamente.
 - A persistência é gerenciada por `MusicRepository` e sua implementação concreta `FileMusicRepository`.
 - Se um arquivo de texto for editado, ele pode ser salvo novamente substituindo o arquivo original.
-- O nome da música é salvo em `<id>.name`, ao lado de `<id>.txt`, então renomear uma música persiste entre execuções.
+- Os nomes das músicas ficam num único `metadata.properties` (formato nativo do Java, `id=nome`) na pasta das músicas, então renomear uma música persiste entre execuções.
 
 ### MUDANÇA 2 — Exportação de Arquivo MIDI
 - O coordenador `Player` possui o método `export(Music music, Path targetPath)`.
