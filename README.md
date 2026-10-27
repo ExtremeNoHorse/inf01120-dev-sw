@@ -15,7 +15,7 @@ produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFu
 
 ### Lista de Requisitos Funcionais Planejados
 
-> Os itens abaixo descrevem o escopo da solução. A interface gráfica dos croquis está implementada em Swing (ver [Interface Gráfica](docs/INTERFACE_GRAFICA.md)); a CLI continua disponível.
+> Os itens abaixo descrevem o escopo da solução. A interface gráfica dos croquis está implementada em Swing (ver [Interface Gráfica](docs/INTERFACE_GRAFICA.md)).
 
 1. Ao iniciar, o sistema exibe a lista de músicas salvas ("Minhas músicas") e permite criar uma nova música a partir do upload de um arquivo `.txt` ou da digitação/colagem direta em um campo de texto na interface.
 2. O sistema interpreta o texto-fonte **caractere por caractere**, aplicando a seguinte tabela de mapeamento:
@@ -44,7 +44,7 @@ A tabela completa está em [Mapa de Comandos](docs/MAPA_DE_COMANDOS.md).
 ## Documentação Técnica (Fase 2)
 
 A documentação detalhada da Fase 2 está organizada na pasta [docs/](docs/):
-- [**Documentação de Implementação da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudanças, pacotes, classes, CLI planejada e qualidade.
+- [**Documentação de Implementação da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudanças, pacotes, classes e qualidade.
 - [**Arquitetura e Princípios SOLID**](docs/ARQUITETURA.md): visão de camadas, padrões de projeto e prevenção de bad smells.
 - [**Mapa de Comandos**](docs/MAPA_DE_COMANDOS.md): tabela de referência para notas, acidentes, durações, polifonia e parâmetros.
 - [**Diagrama de Classes Mermaid**](design/diagram.mmd): modelo estrutural completo e atualizado.
