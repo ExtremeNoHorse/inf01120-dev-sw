@@ -24,11 +24,13 @@ class JFuguePlayerTest {
 
   @Test
   void givenNullPlayer_whenConstructed_thenThrowsNullPointerException() {
+    // When & Then
     assertThrows(NullPointerException.class, () -> new JFuguePlayer(null));
   }
 
   @Test
   void givenUnavailableAudio_whenConstructed_thenThrowsAudioUnavailable() {
+    // When & Then
     try {
       new JFuguePlayer();
     } catch (final TtmException exception) {
@@ -42,9 +44,11 @@ class JFuguePlayerTest {
 
   @Test
   void givenFakePlayer_whenControlsInvoked_thenDelegatesWithoutHardware() throws Exception {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When & Then
     assertDoesNotThrow(() -> player.play(null));
     assertDoesNotThrow(() -> player.play(""));
     player.play("C6q");
@@ -66,9 +70,11 @@ class JFuguePlayerTest {
 
   @Test
   void givenFakePlayer_whenProgressQueried_thenReportsManagedPlayerState() {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When & Then
     player.seek(SEEK_TICK);
     assertEquals(SEEK_TICK, player.getTickPosition());
     assertEquals(TICK_LENGTH, player.getTickLength());
@@ -80,35 +86,43 @@ class JFuguePlayerTest {
 
   @Test
   void givenTwoVoices_whenPlayedTwice_thenSecondSequenceDoesNotStartLate() {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When
     player.play(TWO_VOICES);
     final long firstLength = fakePlayer.managedPlayer.startedSequence.getTickLength();
     player.play(TWO_VOICES);
 
+    // Then
     assertEquals(firstLength, fakePlayer.managedPlayer.startedSequence.getTickLength());
   }
 
   @Test
   void givenSequencerFailure_whenPlay_thenThrowsAudioUnavailable() {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     fakePlayer.managedPlayer.failOnStart = true;
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When & Then
     final TtmException exception = assertThrows(TtmException.class, () -> player.play("C6q"));
     assertEquals(ErrorCode.AUDIO_UNAVAILABLE, exception.getCode());
   }
 
   @Test
   void givenIdlePlayer_whenPauseAndResumeInvoked_thenDoesNotDelegate() {
+    // Given
     final FakePlayer fakePlayer = new FakePlayer();
     fakePlayer.managedPlayer.setPlaying(false);
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
+    // When
     player.pause();
     player.resume();
 
+    // Then
     assertFalse(fakePlayer.managedPlayer.paused);
     assertFalse(fakePlayer.managedPlayer.resumed);
   }

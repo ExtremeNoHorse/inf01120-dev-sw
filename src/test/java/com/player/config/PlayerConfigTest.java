@@ -184,9 +184,11 @@ class PlayerConfigTest {
 
   @Test
   void givenConfigs_whenCompared_thenCoversEqualityBranches() {
+    // Given
     final PlayerConfig config =
         new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120);
 
+    // When & Then
     assertTrue(config.equals(config));
     assertFalse(config.equals(new Object()));
     assertFalse(

@@ -86,9 +86,13 @@ class InterpreterTest {
 
   @Test
   void givenBlankVoiceLine_whenInterpret_thenSkipsIt() {
+    // Given
     final String text = String.join(System.lineSeparator(), "C:3", "   ", "D:3");
+
+    // When
     final String result = interpreter.interpret(text);
 
+    // Then
     assertTrue(result.contains("V0 I6 :CE(7,100) C6qa100"));
     assertFalse(result.contains("V1 I20"));
     assertTrue(result.contains("V2 I0 :CE(7,100) D4qa60"));
@@ -186,37 +190,45 @@ class InterpreterTest {
 
   @Test
   void givenSettingsWithZeroVolume_whenInterpret_thenMutesChannelButKeepsVelocity() {
+    // Given
     final PlayerConfig settings = new PlayerConfig(0, 6, 0, 120);
 
+    // When
     interpreter.configure(settings);
 
+    // Then
     assertEquals("T120 V0 I6 :CE(7,0) C6qa100", interpreter.interpret("C:3"));
   }
 
   @Test
   void givenMappedNullCommand_whenInterpret_thenSkipsTheToken() {
+    // Given
     final Map<String, Command> table = new HashMap<>();
     table.put("C", null);
     final Interpreter customInterpreter =
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
+    // When & Then
     assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("C"));
   }
 
   @Test
   void givenCommandReturningNull_whenInterpret_thenSkipsItsResult() {
+    // Given
     final Map<String, Command> table = new HashMap<>();
     table.put("?", config -> null);
     final Interpreter customInterpreter =
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
 
+    // When & Then
     assertEquals("T120 V0 I6 :CE(7,100)", customInterpreter.interpret("?"));
   }
 
   @Test
   void givenLowercaseOutsideNoteRange_whenInterpret_thenProducesRest() {
+    // Given & When & Then
     assertTrue(interpreter.interpret("h").contains("Rq"));
   }
 }

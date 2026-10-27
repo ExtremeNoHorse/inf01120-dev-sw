@@ -122,12 +122,14 @@ class AppTest {
 
   @Test
   void givenNoArgs_whenRun_thenReturnsZero() {
+    // Given & When & Then
     assertEquals(0, app.run(new String[0]));
     assertEquals(0, app.run(null));
   }
 
   @Test
   void givenIncompleteOrUnknownCommand_whenRun_thenReturnsZero(@TempDir final Path tempDir) {
+    // Given & When & Then
     assertEquals(0, app.run(new String[] {PLAY_COMMAND}));
     assertEquals(0, app.run(new String[] {"export", tempDir.resolve("source").toString()}));
     assertEquals(0, app.run(new String[] {"unknown", "argument"}));
@@ -136,6 +138,7 @@ class AppTest {
   @Test
   void givenValidatorFailure_whenRun_thenReturnsErrorCode(@TempDir final Path tempDir)
       throws IOException {
+    // Given
     final Path songFile = tempDir.resolve("song.txt");
     Files.writeString(songFile, "C:3");
 
@@ -147,11 +150,13 @@ class AppTest {
     final Player player = new Player(new Interpreter(), mockAudioEngine);
     final App failingApp = new App(failingValidator, mockRepository, player);
 
+    // When & Then
     assertEquals(1, failingApp.run(new String[] {PLAY_COMMAND, songFile.toString()}));
   }
 
   @Test
   void givenDefaultMainWithNoArgs_thenDoesNotExit() {
+    // When & Then
     try {
       App.main(new String[0]);
     } catch (final TtmException exception) {
@@ -163,10 +168,14 @@ class AppTest {
   @Test
   void givenPlayCommandWithValidFile_whenRun_thenPlaysAndReturnsZero(@TempDir final Path tempDir)
       throws IOException {
+    // Given
     final Path songFile = tempDir.resolve("song.txt");
     Files.writeString(songFile, "C:3 D:3");
 
+    // When
     final int exitCode = app.run(new String[] {PLAY_COMMAND, songFile.toString()});
+
+    // Then
     assertEquals(0, exitCode);
     assertNotNull(mockAudioEngine.getLastPlayed());
     assertTrue(mockAudioEngine.getLastPlayed().contains("C6qa100"));
@@ -175,11 +184,15 @@ class AppTest {
   @Test
   void givenExportCommandWithValidFile_whenRun_thenExportsMidiAndReturnsZero(
       @TempDir final Path tempDir) throws IOException {
+    // Given
     final Path songFile = tempDir.resolve("song.txt");
     final Path midiFile = tempDir.resolve("out.mid");
     Files.writeString(songFile, "E:3 G:3");
 
+    // When
     final int exitCode = app.run(new String[] {"export", songFile.toString(), midiFile.toString()});
+
+    // Then
     assertEquals(0, exitCode);
     assertTrue(Files.exists(midiFile));
     assertTrue(Files.size(midiFile) > 0);
@@ -187,6 +200,7 @@ class AppTest {
 
   @Test
   void givenMissingFile_whenPlayOrExport_thenReturnsFailureExitCode(@TempDir final Path tempDir) {
+    // When & Then
     final int playCode =
         app.run(new String[] {PLAY_COMMAND, tempDir.resolve("non-existent.txt").toString()});
     assertEquals(1, playCode);

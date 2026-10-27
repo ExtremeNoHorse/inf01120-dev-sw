@@ -13,14 +13,19 @@ class InputValidatorTest {
 
   @Test
   void givenDefaultValidator_whenValidNonEmptyInput_thenPasses() {
+    // Given
     final InputValidator validator = new InputValidator();
+
+    // When & Then
     assertDoesNotThrow(() -> validator.validate("A:3 B:3"));
   }
 
   @Test
   void givenDefaultValidator_whenNullOrBlank_thenThrowsTtmException() {
+    // Given
     final InputValidator validator = new InputValidator();
 
+    // When & Then
     final TtmException exNull = assertThrows(TtmException.class, () -> validator.validate(null));
     assertEquals(ErrorCode.INVALID_INPUT, exNull.getCode());
 
@@ -30,9 +35,11 @@ class InputValidatorTest {
 
   @Test
   void givenCustomRule_whenRuleFails_thenThrowsTtmException() {
+    // Given
     final InputValidator validator = new InputValidator();
     validator.addRule(input -> input.length() >= MIN_LENGTH);
 
+    // When & Then
     assertDoesNotThrow(() -> validator.validate("12345"));
 
     final TtmException ex = assertThrows(TtmException.class, () -> validator.validate("1234"));

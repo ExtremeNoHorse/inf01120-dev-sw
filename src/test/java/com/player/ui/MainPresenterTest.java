@@ -54,6 +54,7 @@ class MainPresenterTest {
 
   @Test
   void givenAttach_thenShowsStartScreenEmptyListAndDefaultSettings() {
+    // Then
     assertEquals(START, view.screen);
     assertTrue(view.musics.isEmpty());
     assertEquals(List.of(DEFAULT_OCTAVE, PlayerConfig.DEFAULT_BPM, 100), view.settings);
@@ -61,9 +62,13 @@ class MainPresenterTest {
 
   @Test
   void givenTypeText_whenNameGiven_thenCreatesAndOpensEditor() {
+    // Given
     view.answers.add("Pedra");
+
+    // When
     presenter.onTypeText();
 
+    // Then
     assertEquals(EDITOR, view.screen);
     assertEquals("Pedra", view.selected.getName());
     assertEquals(1, view.musics.size());
@@ -71,28 +76,37 @@ class MainPresenterTest {
 
   @Test
   void givenTypeText_whenCancelled_thenStaysOnStartScreen() {
+    // When
     presenter.onTypeText();
 
+    // Then
     assertEquals(START, view.screen);
     assertTrue(view.musics.isEmpty());
   }
 
   @Test
   void givenTypeText_whenBlankName_thenShowsError() {
+    // Given
     view.answers.add(" ");
+
+    // When
     presenter.onTypeText();
 
+    // Then
     assertEquals(1, view.errors.size());
   }
 
   @Test
   void givenUpload_whenFileChosen_thenImportsAndOpensIt() throws IOException {
+    // Given
     final Path file = tempDir.resolve("poema.txt");
     Files.writeString(file, NOTE);
     view.textFile = file;
 
+    // When
     presenter.onUpload();
 
+    // Then
     assertEquals(EDITOR, view.screen);
     assertEquals(NOTE, view.editorText);
     assertEquals("poema", view.selected.getName());
@@ -100,103 +114,130 @@ class MainPresenterTest {
 
   @Test
   void givenEditedText_whenSave_thenPersists() {
+    // Given
     final Music music = openNew(SONG);
     view.editorText = "D:3";
 
+    // When
     presenter.onSave();
 
+    // Then
     assertEquals("D:3", library.listAll().getFirst().getContent());
     assertEquals("D:3", music.getContent());
   }
 
   @Test
   void givenNoMusicOpen_whenSaveOrPlay_thenDoesNothing() {
+    // When
     presenter.onSave();
     presenter.onPlayPause();
 
+    // Then
     assertNull(engine.played);
     assertTrue(view.errors.isEmpty());
   }
 
   @Test
   void givenMusic_whenRenamed_thenListShowsNewName() {
+    // Given
     final Music music = openNew("Old");
     view.answers.add("New");
 
+    // When
     presenter.onRename(music);
 
+    // Then
     assertEquals("New", view.musics.getFirst().getName());
   }
 
   @Test
   void givenOpenMusic_whenDeletedAndConfirmed_thenGoesBackToStart() {
+    // Given
     final Music music = openNew(SONG);
     view.confirmAnswer = true;
 
+    // When
     presenter.onDelete(music);
 
+    // Then
     assertEquals(START, view.screen);
     assertTrue(view.musics.isEmpty());
   }
 
   @Test
   void givenOtherMusic_whenDeleted_thenKeepsEditorOpen() {
+    // Given
     final Music first = openNew("A");
     openNew(SECOND);
     view.confirmAnswer = true;
 
+    // When
     presenter.onDelete(first);
 
+    // Then
     assertEquals(EDITOR, view.screen);
     assertEquals(1, view.musics.size());
   }
 
   @Test
   void givenDeleteNotConfirmed_thenKeepsMusic() {
+    // Given
     final Music music = openNew(SONG);
 
+    // When
     presenter.onDelete(music);
 
+    // Then
     assertEquals(1, view.musics.size());
   }
 
   @Test
   void givenOpenMusic_whenExported_thenWritesMidiWithEditorText() {
+    // Given
     final Music music = openNew(SONG);
     view.editorText = NOTE;
     view.exportFile = tempDir.resolve("out.mid");
 
+    // When
     presenter.onExport(music);
 
+    // Then
     assertTrue(Files.exists(view.exportFile));
     assertEquals(1, view.infos.size());
   }
 
   @Test
   void givenEmptyMusic_whenExported_thenShowsValidationError() {
+    // Given
     final Music music = openNew(SONG);
     openNew("Other");
     view.exportFile = tempDir.resolve("out.mid");
 
+    // When
     presenter.onExport(music);
 
+    // Then
     assertEquals(1, view.errors.size());
     assertFalse(Files.exists(view.exportFile));
   }
 
   @Test
   void givenText_whenPlayPauseResume_thenTogglesEngine() {
+    // Given
     openNew(SONG);
     view.editorText = NOTE;
 
+    // When & Then
     presenter.onPlayPause();
     assertEquals("T120 V0 I6 :CE(7,100) C6qa100", engine.played);
     assertTrue(view.playing);
 
+    // When & Then
     presenter.onPlayPause();
     assertTrue(engine.paused);
     assertFalse(view.playing);
 
+    // When & Then
     presenter.onPlayPause();
     assertTrue(engine.resumed);
     assertTrue(view.playing);
@@ -204,26 +245,32 @@ class MainPresenterTest {
 
   @Test
   void givenEmptyText_whenPlay_thenShowsError() {
+    // Given
     openNew(SONG);
 
+    // When
     presenter.onPlayPause();
 
+    // Then
     assertNull(engine.played);
     assertEquals(1, view.errors.size());
   }
 
   @Test
   void givenPlaying_whenTicks_thenShowsProgressAndStopsAtEnd() {
+    // Given
     openNew(SONG);
     view.editorText = "ABCD";
     presenter.onPlayPause();
 
+    // When & Then
     engine.active = true;
     engine.position = HALF;
     presenter.onTick();
     assertEquals(HALF, view.progress);
     assertEquals(List.of(2), view.highlight);
 
+    // When & Then
     engine.active = false;
     presenter.onTick();
     assertFalse(view.playing);
@@ -233,58 +280,71 @@ class MainPresenterTest {
 
   @Test
   void givenPlayStillLoading_whenTick_thenKeepsPlaying() {
+    // Given
     openNew(SONG);
     view.editorText = NOTE;
     presenter.onPlayPause();
 
+    // When
     presenter.onTick();
 
+    // Then
     assertTrue(view.playing);
   }
 
   @Test
   void givenStopped_whenTickRestartSeek_thenEngineUntouched() {
+    // When
     presenter.onTick();
     presenter.onRestart();
     presenter.onSeek(HALF);
 
+    // Then
     assertEquals(-1, engine.seek);
   }
 
   @Test
   void givenPlaying_whenSeekAndRestart_thenMovesEngine() {
+    // Given
     openNew(SONG);
     view.editorText = NOTE;
     presenter.onPlayPause();
 
+    // When & Then
     presenter.onSeek(HALF);
     assertEquals(HALF, engine.seek);
 
+    // When & Then
     presenter.onRestart();
     assertEquals(0, engine.seek);
   }
 
   @Test
   void givenSettingsChange_whenStopped_thenUpdatesViewAndPlayer() {
+    // When
     presenter.onOctaveChange(1);
     presenter.onBpmChange(-1);
     presenter.onBpmChange(-1);
     presenter.onVolumeChange(HALF_VOLUME);
 
+    // Then
     assertEquals(List.of(DEFAULT_OCTAVE + 1, 100, HALF_VOLUME), view.settings);
     assertEquals(DEFAULT_OCTAVE + 1, player.getPlayerConfig().getOctave());
   }
 
   @Test
   void givenPlaying_whenSettingsChange_thenRestartsAtSamePosition() {
+    // Given
     openNew(SONG);
     view.editorText = NOTE;
     presenter.onPlayPause();
     engine.active = true;
     engine.position = HALF;
 
+    // When
     presenter.onBpmChange(1);
 
+    // Then
     assertTrue(engine.stopped);
     assertTrue(engine.played.startsWith("T130"));
     presenter.onTick();
@@ -293,46 +353,57 @@ class MainPresenterTest {
 
   @Test
   void givenTwoMusics_whenNext_thenOpensFollowingOneOnly() {
+    // Given
     openNew("A");
     final Music first = view.musics.getFirst();
     openNew(SECOND);
     presenter.onSelect(first);
 
+    // When & Then
     presenter.onNext();
     assertEquals(SECOND, view.selected.getName());
 
+    // When & Then
     presenter.onNext();
     assertEquals(SECOND, view.selected.getName());
   }
 
   @Test
   void givenSameOrNullSelection_whenSelect_thenIgnores() {
+    // Given
     final Music music = openNew("A");
     view.editorText = "edited";
 
+    // When
     presenter.onSelect(music);
     presenter.onSelect(null);
 
+    // Then
     assertEquals("edited", view.editorText);
   }
 
   @Test
   void givenNoCurrent_whenNext_thenDoesNothing() {
+    // When
     presenter.onNext();
 
+    // Then
     assertEquals(START, view.screen);
   }
 
   @Test
   void givenPlaying_whenNewMusicOrClose_thenStopsEngine() {
+    // Given
     openNew(SONG);
     view.editorText = NOTE;
     presenter.onPlayPause();
 
+    // When & Then
     presenter.onNewMusic();
     assertTrue(engine.stopped);
     assertEquals(START, view.screen);
 
+    // When & Then
     presenter.onClose();
     assertFalse(view.playing);
   }

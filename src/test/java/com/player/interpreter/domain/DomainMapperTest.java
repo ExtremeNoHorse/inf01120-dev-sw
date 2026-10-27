@@ -56,8 +56,10 @@ class DomainMapperTest {
   @ParameterizedTest
   @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G"})
   void givenDefaultMapper_whenMappingBaseNote_thenReturnsNoteCommand(final String token) {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 
+    // When & Then
     assertTrue(mapper.supports(token));
     final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
     assertEquals(token, command.getCmd());
@@ -67,8 +69,10 @@ class DomainMapperTest {
   @CsvSource({"A#:3,A#,QUARTER_NOTE", "Bb:2,Bb,HALF_NOTE", "C:1,C,WHOLE_NOTE"})
   void givenDefaultMapper_whenMappingStructuredNote_thenReturnsParsedNoteCommand(
       final String token, final String expectedNote, final MusicalDuration expectedDuration) {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 
+    // When & Then
     assertTrue(mapper.supports(token));
     final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
     assertEquals(expectedNote, command.getCmd());
@@ -77,10 +81,13 @@ class DomainMapperTest {
 
   @Test
   void givenStructuredNoteWithoutDuration_whenMapped_thenDurationIsNull() {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 
+    // When
     final Note command = assertInstanceOf(Note.class, mapper.toDomain("A#"));
 
+    // Then
     assertEquals("A#", command.getCmd());
     assertNull(command.getDuration());
   }
@@ -88,8 +95,10 @@ class DomainMapperTest {
   @ParameterizedTest
   @ValueSource(strings = {"?", "V", ">", "<", " "})
   void givenDefaultMapper_whenMappingControl_thenReturnsConfigUpdateCommand(final String token) {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 
+    // When & Then
     assertTrue(mapper.supports(token));
     assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
   }
@@ -98,8 +107,10 @@ class DomainMapperTest {
   @ValueSource(strings = {"!", ";", ",", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"})
   void givenDefaultMapper_whenMappingInstrumentToken_thenReturnsConfigUpdateCommand(
       final String token) {
+    // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 
+    // When & Then
     assertTrue(mapper.supports(token));
     assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
   }
