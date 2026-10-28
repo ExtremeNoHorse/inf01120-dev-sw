@@ -27,9 +27,9 @@ O sistema é estruturado em camadas desacopladas seguindo os princípios de modu
    - `AudioEngine`: Interface que abstrai o motor de áudio, incluindo a posição e a duração da reprodução (`getTickPosition`, `getTickLength`, `isActive`).
    - `JFuguePlayer`: Adaptador que isola a biblioteca externa JFugue. Monta cada sequência com um parser novo e inicia o sequenciador sem abrir thread. O parser compartilhado do JFugue não zera o tempo das vozes além da `V0`: a segunda reprodução de uma música com várias vozes começava atrasada e com o BPM antigo. Reinícios seguidos, como vários cliques no BPM, também não disputam mais o mesmo parser.
 4. **Camada de Persistência**:
-   - `Music`: Entidade que representa uma composição textual e seu estado.
+   - `Music`: Entidade que representa uma composição textual, incluindo opcionalmente o caminho do TXT importado.
    - `MusicRepository`: Interface para operações de CRUD e leitura por caminho.
-   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`). Cada música é um `<id>.txt`, e os nomes ficam num único `metadata.properties` (`id=nome`, lido e gravado com `java.util.Properties`, sem dependência nova). Assim o "renomear" sobrevive entre execuções. Um `.txt` sem entrada no índice aparece como "Música " + o início do id.
+   - `FileMusicRepository`: Implementação baseada em arquivos no sistema de arquivos local (`java.nio.file`). Cada música é um `<id>.txt`; `metadata.properties` guarda nome e, quando aplicável, a origem externa. Salvar o conteúdo de uma importada atualiza ambos os arquivos, enquanto deletar remove apenas a cópia local.
 5. **Camada de Apresentação (GUI Swing)** — ver [INTERFACE_GRAFICA.md](INTERFACE_GRAFICA.md):
    - `MusicLibrary`: *Facade* com os casos de uso da lista de músicas.
    - `MainView` / `MainPresenter`: padrão MVP; o presenter não depende de Swing e é testado com uma view falsa.

@@ -28,18 +28,18 @@ final class PlaybackBar {
 
   PlaybackBar(final MainPresenter presenter) {
     panel.setBackground(Theme.BACKGROUND);
-    panel.setBorder(Theme.padding(Theme.GAP, Theme.MARGIN));
+    panel.setBorder(Theme.createBorder(Theme.GAP, Theme.MARGIN));
 
     progress.setOpaque(false);
     progress.addChangeListener(
-        e -> {
+        _ -> {
           if (!updating && !progress.getValueIsAdjusting()) {
             presenter.onSeek(progress.getValue());
           }
         });
     panel.add(progress, BorderLayout.NORTH);
 
-    playButton = Theme.iconButton(PLAY, "Tocar / pausar", presenter::onPlayPause);
+    playButton = Theme.iconButton(PLAY, "Tocar | pausar", presenter::onPlayPause);
     playButton.setFont(Theme.PLAY_ICON);
 
     final JPanel controls = new JPanel(new FlowLayout(FlowLayout.CENTER, Theme.GAP, 0));
@@ -49,6 +49,7 @@ final class PlaybackBar {
     controls.add(Theme.iconButton("+", "Aumentar oitava", () -> presenter.onOctaveChange(1)));
     controls.add(Theme.iconButton("|◀", "Voltar ao início", presenter::onRestart));
     controls.add(playButton);
+    controls.add(Theme.iconButton("■", "Parar", presenter::onStop));
     controls.add(Theme.iconButton("▶|", "Próxima música", presenter::onNext));
     controls.add(Theme.iconButton("−", "Diminuir BPM", () -> presenter.onBpmChange(-1)));
     controls.add(bpmLabel);
@@ -58,7 +59,7 @@ final class PlaybackBar {
     volume.setOpaque(false);
     volume.setPreferredSize(Theme.VOLUME_SIZE);
     volume.addChangeListener(
-        e -> {
+        _ -> {
           if (!updating && !volume.getValueIsAdjusting()) {
             presenter.onVolumeChange(volume.getValue());
           }

@@ -131,17 +131,22 @@ public final class PlayerConfig {
   }
 
   /**
-   * Constructs a new {@code PlayerConfig} instance with full base parameter specification.
+   * Copies another configuration, including its voice base parameters.
    *
-   * @param instrument current instrument
-   * @param octave current octave
-   * @param volume current volume
-   * @param bpm tempo in BPM
-   * @param baseOctave base octave of the current voice
-   * @param baseVolume base volume of the current voice
-   * @param baseInstrument base instrument of the current voice
+   * @param source configuration to copy
    */
-  public PlayerConfig(
+  public PlayerConfig(final PlayerConfig source) {
+    final PlayerConfig config = Objects.requireNonNull(source, "PlayerConfig cannot be null");
+    this.instrument = config.instrument;
+    this.octave = config.octave;
+    this.volume = config.volume;
+    this.bpm = config.bpm;
+    this.baseOctave = config.baseOctave;
+    this.baseVolume = config.baseVolume;
+    this.baseInstrument = config.baseInstrument;
+  }
+
+  private PlayerConfig(
       final int instrument,
       final int octave,
       final int volume,
@@ -149,9 +154,9 @@ public final class PlayerConfig {
       final int baseOctave,
       final int baseVolume,
       final int baseInstrument) {
-    this.baseOctave = baseOctave;
-    this.baseVolume = baseVolume;
-    this.baseInstrument = baseInstrument;
+    this.baseOctave = Math.clamp(baseOctave, MIN_OCTAVE, MAX_OCTAVE);
+    this.baseVolume = Math.clamp(baseVolume, MIN_VOLUME, MAX_VOLUME);
+    this.baseInstrument = Math.clamp(baseInstrument, MIN_INSTRUMENT, MAX_INSTRUMENT);
     this.setInstrument(instrument);
     this.setOctave(octave);
     this.setVolume(volume);
@@ -246,14 +251,14 @@ public final class PlayerConfig {
     return baseInstrument;
   }
 
-  /** Raises the current octave by one, clamped to the supported octave range. */
+  /** Raises the current octave by one, returning to the voice base octave at the upper limit. */
   public void increaseOctaveRelative() {
-    this.octave = Math.clamp(this.octave + 1, MIN_OCTAVE, MAX_OCTAVE);
+    this.octave = this.octave == MAX_OCTAVE ? baseOctave : this.octave + 1;
   }
 
-  /** Lowers the current octave by one, clamped to the supported octave range. */
+  /** Lowers the current octave by one, returning to the voice base octave at the lower limit. */
   public void decreaseOctaveRelative() {
-    this.octave = Math.clamp(this.octave - 1, MIN_OCTAVE, MAX_OCTAVE);
+    this.octave = this.octave == MIN_OCTAVE ? baseOctave : this.octave - 1;
   }
 
   /** Doubles current volume, clamping to maximum allowable volume (127). */

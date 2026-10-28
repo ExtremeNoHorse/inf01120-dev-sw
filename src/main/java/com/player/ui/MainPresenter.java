@@ -166,6 +166,11 @@ public final class MainPresenter {
     }
   }
 
+  /** Handles the stop button. */
+  public void onStop() {
+    stop();
+  }
+
   /** Handles the "previous" button: restarts the current music. */
   public void onRestart() {
     if (state != PlaybackState.STOPPED) {
@@ -309,6 +314,7 @@ public final class MainPresenter {
   private void setState(final PlaybackState newState) {
     state = newState;
     view.showPlaying(newState == PlaybackState.PLAYING);
+    view.setEditorEditable(newState == PlaybackState.STOPPED);
   }
 
   private void refreshList() {

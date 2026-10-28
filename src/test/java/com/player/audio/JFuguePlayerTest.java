@@ -43,7 +43,7 @@ class JFuguePlayerTest {
   }
 
   @Test
-  void givenFakePlayer_whenControlsInvoked_thenDelegatesWithoutHardware() throws Exception {
+  void givenFakePlayer_whenControlsInvoked_thenDelegatesWithoutHardware() {
     // Given
     final FakePlayer fakePlayer = new FakePlayer();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
@@ -115,7 +115,7 @@ class JFuguePlayerTest {
   void givenIdlePlayer_whenPauseAndResumeInvoked_thenDoesNotDelegate() {
     // Given
     final FakePlayer fakePlayer = new FakePlayer();
-    fakePlayer.managedPlayer.setPlaying(false);
+    fakePlayer.managedPlayer.setPlaying();
     final JFuguePlayer player = new JFuguePlayer(fakePlayer);
 
     // When
@@ -159,8 +159,8 @@ class JFuguePlayerTest {
       return playing;
     }
 
-    private void setPlaying(final boolean playing) {
-      this.playing = playing;
+    private void setPlaying() {
+      this.playing = false;
     }
 
     @Override

@@ -62,7 +62,7 @@ final class StartPanel {
     card.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.SIDEBAR),
-            Theme.padding(Theme.MARGIN, Theme.MARGIN)));
+            Theme.createBorder(Theme.MARGIN, Theme.MARGIN)));
 
     final JLabel iconLabel = centered(new JLabel(icon));
     iconLabel.setFont(Theme.CARD_ICON);

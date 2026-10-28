@@ -244,6 +244,25 @@ class MainPresenterTest {
   }
 
   @Test
+  void givenPlayingMusic_whenStopped_thenStopsEngineAndUnlocksEditor() {
+    // Given
+    openNew(SONG);
+    view.editorText = NOTE;
+    presenter.onPlayPause();
+    assertFalse(view.editorEditable);
+
+    // When
+    presenter.onStop();
+
+    // Then
+    assertTrue(engine.stopped);
+    assertFalse(view.playing);
+    assertTrue(view.editorEditable);
+    assertEquals(0, view.progress);
+    assertTrue(view.highlight.isEmpty());
+  }
+
+  @Test
   void givenEmptyText_whenPlay_thenShowsError() {
     // Given
     openNew(SONG);
@@ -474,6 +493,7 @@ class MainPresenterTest {
     private String editorText = "";
     private List<Integer> settings = List.of();
     private boolean playing;
+    private boolean editorEditable = true;
     private int progress = -1;
     private List<Integer> highlight = List.of();
     private boolean confirmAnswer;
@@ -510,6 +530,11 @@ class MainPresenterTest {
     @Override
     public void showPlaying(final boolean isPlaying) {
       playing = isPlaying;
+    }
+
+    @Override
+    public void setEditorEditable(final boolean editable) {
+      editorEditable = editable;
     }
 
     @Override

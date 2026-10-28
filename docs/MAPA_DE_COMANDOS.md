@@ -56,7 +56,7 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 *A partir da 5ª linha, o ciclo de parâmetros reinicia (`V4` usa oitava 6, volume 100, etc.).*
 
 ### Atraso de Entrada (Delay)
-- Sintaxe: `[n]` no início da linha (ex: `[4] C:3 D:3`).
+- Sintaxe: `[n]` no início da linha (ex: `[4] C:3 D:3`), com `n` entre 0 e 10.000.
 - Efeito: Insere `n` tempos de silêncio (`Rq`) antes da primeira nota daquela voz.
 
 ---
@@ -65,8 +65,8 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 
 | Caractere | Ação | Escopo |
 |-----------|------|--------|
-| `?` | Aumenta a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
-| `V` | Diminui a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
+| `?` | Aumenta a oitava atual em 1; acima de 9 retorna à oitava-base da voz. | Voz atual |
+| `V` | Diminui a oitava atual em 1; abaixo de 0 retorna à oitava-base da voz. | Voz atual |
 | `>` | Aumenta o BPM em 10 (acelera). | Global (todas as vozes) |
 | `<` | Diminui o BPM em 10 (desacelera). | Global (todas as vozes) |
 | ` ` (Espaço) | Dobra o volume da voz (com teto máximo de 127). | Voz atual |

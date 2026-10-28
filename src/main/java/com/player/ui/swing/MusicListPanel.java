@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 
 /** Sidebar "Minhas músicas" with the context menu (renomear, deletar, exportar). */
 final class MusicListPanel {
@@ -31,7 +32,7 @@ final class MusicListPanel {
   MusicListPanel(final MainPresenter presenter) {
     panel.setBackground(Theme.SIDEBAR);
     panel.setPreferredSize(Theme.SIDEBAR_SIZE);
-    panel.setBorder(Theme.padding(Theme.PADDING, Theme.PADDING));
+    panel.setBorder(Theme.createBorder(Theme.PADDING, Theme.PADDING));
 
     final JLabel title = new JLabel("Minhas músicas");
     title.setBorder(BorderFactory.createEmptyBorder(0, 0, Theme.GAP, 0));
@@ -44,7 +45,7 @@ final class MusicListPanel {
               (JComponent)
                   renderer.getListCellRendererComponent(
                       lst, wrapped(music.getName()), index, selected, focused);
-          cell.setBorder(Theme.padding(Theme.GAP, Theme.PADDING));
+          cell.setBorder(Theme.createBorder(Theme.GAP, Theme.PADDING));
           return cell;
         });
     list.setBackground(Theme.SIDEBAR);
@@ -59,7 +60,9 @@ final class MusicListPanel {
 
     final JScrollPane scroll =
         new JScrollPane(
-            list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            list,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     scroll.setBorder(BorderFactory.createEmptyBorder());
     panel.add(scroll, BorderLayout.CENTER);
 
@@ -95,7 +98,8 @@ final class MusicListPanel {
 
       private void maybeShow(final MouseEvent e) {
         final int row = list.locationToIndex(e.getPoint());
-        if (e.isPopupTrigger() && row >= 0) {
+        if (e.isPopupTrigger() && row >= 0 && list.getCellBounds(row, row).contains(e.getPoint())) {
+          list.setSelectedIndex(row);
           final Music music = model.get(row);
           final JPopupMenu menu = new JPopupMenu();
           menu.add(item("renomear", music, presenter::onRename));
@@ -116,7 +120,7 @@ final class MusicListPanel {
   private static JMenuItem item(
       final String label, final Music music, final Consumer<Music> action) {
     final JMenuItem item = new JMenuItem(label);
-    item.addActionListener(e -> action.accept(music));
+    item.addActionListener(_ -> action.accept(music));
     return item;
   }
 }

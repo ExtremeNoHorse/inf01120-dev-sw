@@ -28,8 +28,8 @@ class NoteTest {
 
     // Then
     assertEquals("C2a10", result);
-    assertEquals("C", note.getCmd());
-    assertNull(note.getDuration());
+    assertEquals("C", note.cmd());
+    assertNull(note.duration());
   }
 
   @Test
@@ -45,9 +45,9 @@ class NoteTest {
 
     // Then
     assertEquals("A#5qa80", sharpResult);
-    assertEquals(MusicalDuration.QUARTER_NOTE, sharpNote.getDuration());
+    assertEquals(MusicalDuration.QUARTER_NOTE, sharpNote.duration());
 
     assertEquals("Bb5wa80", flatResult);
-    assertEquals(MusicalDuration.WHOLE_NOTE, flatNote.getDuration());
+    assertEquals(MusicalDuration.WHOLE_NOTE, flatNote.duration());
   }
 }

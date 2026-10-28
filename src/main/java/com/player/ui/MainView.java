@@ -53,6 +53,13 @@ public interface MainView {
   void showPlaying(boolean playing);
 
   /**
+   * Enables or disables editing of the displayed source text.
+   *
+   * @param editable whether the source text may be changed
+   */
+  void setEditorEditable(boolean editable);
+
+  /**
    * Moves the progress bar.
    *
    * @param permille progress from 0 to 1000

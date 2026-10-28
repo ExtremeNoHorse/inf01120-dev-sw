@@ -66,6 +66,7 @@ public final class MusicLibrary {
     final Music music = repository.newMusic();
     music.setName(nameFromFile(source));
     music.setContent(read.getContent());
+    music.setSourcePath(source.toAbsolutePath().normalize());
     return repository.save(music);
   }
 
@@ -74,11 +75,10 @@ public final class MusicLibrary {
    *
    * @param music the music to update
    * @param content the new text content
-   * @return the persisted music
    */
-  public Music saveContent(final Music music, final String content) {
+  public void saveContent(final Music music, final String content) {
     music.setContent(content);
-    return repository.save(music);
+    repository.saveAndOverwriteSource(music);
   }
 
   /**
@@ -86,12 +86,11 @@ public final class MusicLibrary {
    *
    * @param music the music to rename
    * @param newName the new display name
-   * @return the persisted music
    * @throws TtmException if the name is blank
    */
-  public Music rename(final Music music, final String newName) {
+  public void rename(final Music music, final String newName) {
     music.setName(requireName(newName));
-    return repository.save(music);
+    repository.save(music);
   }
 
   /**

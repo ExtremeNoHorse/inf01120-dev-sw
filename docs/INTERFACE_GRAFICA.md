@@ -17,12 +17,38 @@ Ou pela IDE: rodar `com.player.App` sem argumentos. As músicas ficam salvas na 
 | Croqui | Implementação | Comportamento |
 |--------|---------------|---------------|
 | Tela 1 | `StartPanel` | "Digitar Texto" pede o nome e cria uma música vazia. "Fazer Upload" importa um `.txt` com o nome do arquivo. |
-| Tela 2 | `EditorPanel` | Editor com rolagem e botão **salvar**, que grava o texto na música aberta. |
-| Tela 3 | `MusicListPanel` | Clique com o botão direito: **renomear**, **deletar** (com confirmação) e **exportar música** (seletor de arquivo `.mid`). |
-| Tela 4 | `EditorPanel` + `PlaybackBar` | Durante a reprodução, o caractere tocado em **cada linha (voz)** fica destacado em vermelho, acompanhando a duração real de cada nota. Comandos sem som (`?`, `!`, espaço...) não ganham destaque; uma voz que já terminou fica sem destaque. |
-| Barra inferior | `PlaybackBar` | Progresso (arrastável), Oitava −/+, voltar ao início, play/pause, próxima música, BPM −/+ e volume. |
+| Tela 2 | `EditorPanel` | Editor com rolagem e botão **salvar**; arquivos importados também sobrescrevem o TXT de origem. |
+| Tela 3 | `MusicListPanel` | Clique com o botão direito seleciona o item e abre **renomear**, **deletar** (com confirmação) e **exportar música**; área vazia não abre menu. |
+| Tela 4 | `EditorPanel` + `PlaybackBar` | Durante a reprodução, o caractere tocado em **cada linha (voz)** fica destacado em vermelho; o editor fica somente-leitura. Comandos sem som (`?`, `!`, espaço...) não ganham destaque; uma voz que já terminou fica sem destaque. |
+| Barra inferior | `PlaybackBar` | Progresso (arrastável), Oitava −/+, voltar ao início, play/pause, stop, próxima música, BPM −/+ e volume. |
 
 Mudar oitava, BPM ou volume durante a reprodução reinterpreta o texto e **retoma do mesmo ponto**.
+
+## Croquis e justificativas
+
+### Tela 1 — Início
+
+![Tela 1](../front/Tela_1.png)
+
+Oferece os dois modos de entrada exigidos: digitação e importação de TXT. A biblioteca permanece visível para situar a criação no conjunto de músicas salvas.
+
+### Tela 2 — Editor
+
+![Tela 2](../front/Tela_2.jpeg)
+
+O editor ocupa a área principal para favorecer revisão do texto. Salvar mantém músicas criadas localmente e atualiza também a origem de músicas importadas.
+
+### Tela 3 — Ações da biblioteca
+
+![Tela 3](../front/Tela_3.jpeg)
+
+O menu contextual atua somente no item selecionado, reduzindo o risco de renomear, deletar ou exportar a música errada.
+
+### Tela 4 — Reprodução
+
+![Tela 4](../front/Tela_4.png)
+
+O editor é bloqueado durante reprodução e o destaque vermelho acompanha cada voz; a barra reúne progresso, pausa, parada, navegação e parâmetros globais.
 
 ## Arquitetura (Clean Architecture)
 
@@ -62,3 +88,5 @@ A interface precisou de alguns ajustes no backend: persistir o nome, aplicar as 
 
 - "Próxima" (`▶|`) abre a próxima música da lista. "Anterior" (`|◀`) volta ao início da música atual.
 - Trocar de música descarta edições não salvas.
+- A exportação acrescenta `.mid` ao nome sem extensão e pede confirmação antes de substituir um arquivo existente.
+- O áudio depende de dispositivo MIDI disponível na máquina que executa a aplicação.

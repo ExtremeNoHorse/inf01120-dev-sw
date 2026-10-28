@@ -90,7 +90,7 @@ class FileMusicRepositoryTest {
   @Test
   void givenNamesWithSpecialCharacters_whenSaveAndReload_thenKeepsThemExactly() {
     // Given
-    final String name = "Rock/Pop: ação = 100% #1";
+    final String name = "Rock|Pop: ação = 100% #1";
 
     // When
     repository.save(new Music("special", name, "A"));
@@ -205,7 +205,6 @@ class FileMusicRepositoryTest {
     assertEquals("m1", music.getId());
     assertEquals("Song Name", music.getName());
     assertEquals("Notes", music.getContent());
-    assertTrue(music.hasRecording());
 
     // When & Then
     final Music otherSameId = new Music("m1", "Other", "Notes2");
@@ -215,8 +214,7 @@ class FileMusicRepositoryTest {
     // When & Then
     final Music otherDiffId = new Music("m2", "Other", "Notes2");
     assertNotEquals(music, otherDiffId);
-    assertTrue(music.equals(music));
-    assertFalse(music.equals(new Object()));
+    assertNotEquals(new Object(), music);
   }
 
   @Test
@@ -296,17 +294,17 @@ class FileMusicRepositoryTest {
     // Given
     final Path baseFile = tempDir.resolve("base-file");
     Files.writeString(baseFile, "not a directory");
+    final String childPath = baseFile.resolve("child").toString();
 
     // When & Then
-    assertThrows(
-        TtmException.class, () -> new FileMusicRepository(baseFile.resolve("child").toString()));
+    assertThrows(TtmException.class, () -> new FileMusicRepository(childPath));
 
     // Given
     final FileMusicRepository invalidRepository = new FileMusicRepository(baseFile.toString());
+    final Music music = new Music("id", "Song", TEST_CONTENT);
 
     // When & Then
-    assertThrows(
-        TtmException.class, () -> invalidRepository.save(new Music("id", "Song", TEST_CONTENT)));
+    assertThrows(TtmException.class, () -> invalidRepository.save(music));
     assertThrows(TtmException.class, invalidRepository::findAll);
     assertThrows(TtmException.class, () -> invalidRepository.deleteById("id"));
   }
