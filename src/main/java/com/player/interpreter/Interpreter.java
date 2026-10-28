@@ -195,7 +195,8 @@ public final class Interpreter {
       }
 
       final char ch = line.charAt(index);
-      lastNoteToken = processSingleCharacter(ch, voiceConfig, lastNoteToken);
+      processSingleCharacter(ch, voiceConfig, lastNoteToken);
+      lastNoteToken = null;
       index++;
     }
   }
@@ -213,12 +214,12 @@ public final class Interpreter {
     return null;
   }
 
-  private String processSingleCharacter(
+  private void processSingleCharacter(
       final char ch, final PlayerConfig voiceConfig, final String lastNoteToken) {
     // 2. Lowercase note letters: silence / rest
     if (ch >= 'a' && ch <= 'g') {
       appendToken(REST_TOKEN);
-      return null;
+      return;
     }
 
     final String charStr = String.valueOf(ch);
@@ -226,12 +227,11 @@ public final class Interpreter {
     // 3. Supported mapping commands (?, V, >, <, space, digits, !, ;, ,)
     if (mapper.supports(charStr)) {
       executeCommandToken(charStr, voiceConfig);
-      return lastNoteToken;
+      return;
     }
 
     // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
     appendToken(Objects.requireNonNullElse(lastNoteToken, REST_TOKEN));
-    return lastNoteToken;
   }
 
   /** Appends a token to the pattern and, if it is a note or a rest, records when it sounds. */

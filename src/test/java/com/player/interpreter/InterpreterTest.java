@@ -69,6 +69,12 @@ class InterpreterTest {
   }
 
   @Test
+  void givenNoteWithoutDuration_whenInterpret_thenUsesJfugueDefaultDuration() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) C6a100", interpreter.interpret("C"));
+  }
+
+  @Test
   void givenMultipleLines_whenInterpret_thenGeneratesPolyphonicVoices() {
     // Given
     final String text = "C:3\nE:3\nG:3\nC:1";
@@ -109,6 +115,18 @@ class InterpreterTest {
   void givenTextCommand_whenInterpret_thenGeneratesExpectedToken(
       final String text, final String expectedToken) {
     assertTrue(interpreter.interpret(text).contains(expectedToken));
+  }
+
+  @Test
+  void givenControlBetweenNoteAndFallback_whenInterpret_thenFallbackEmitsRest() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) A6a100 I24 Rq", interpreter.interpret("A!H"));
+  }
+
+  @Test
+  void givenConsecutiveFallbacks_whenInterpret_thenOnlyFirstRepeatsPreviousNote() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) A6a100 A6a100 Rq", interpreter.interpret("AHH"));
   }
 
   @Test

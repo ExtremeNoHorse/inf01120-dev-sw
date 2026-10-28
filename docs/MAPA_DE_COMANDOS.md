@@ -38,7 +38,7 @@ A duração é especificada pelo sufixo `:<número>` associado à nota (ex: `C:1
 | `:6` | Fusa | 1/32 | `t` |
 | `:7` | Semifusa | 1/64 | `x` |
 
-*Nota*: Se a nota for declarada sem sufixo de duração (ex: `C`), ela é emitida sem sufixo de tempo explícito, assumindo a duração padrão do sintetizador.
+**Decisão do grupo — compatibilidade com a Fase 1:** notas sem sufixo de duração (ex.: `C`) continuam válidas. Elas são emitidas sem marcador de tempo explícito e usam a semínima padrão do JFugue; novas entradas podem indicar a figura desejada com `:1` a `:7`.
 
 ---
 
@@ -83,5 +83,5 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 | Caractere | Regra |
 |-----------|-------|
 | `a, b, c, d, e, f, g` (minúsculas isoladas) | Silêncio / Pausa (`Rq`). |
-| Vogais `O, I, U` e consoantes não-nota (ex: `H, J, K, L, M, N...`) | Se o caractere anterior processado era uma nota, repete essa nota; caso contrário, gera pausa (`Rq`). |
-| Outros caracteres | Se o caractere anterior era nota, repete a nota; caso contrário, pausa (`Rq`). |
+| Vogais `O, I, U` e consoantes não-nota (ex: `H, J, K, L, M, N...`) | Se o caractere imediatamente anterior era uma nota, repete essa nota; caso contrário, gera pausa (`Rq`). |
+| Outros caracteres | Se o caractere imediatamente anterior era nota, repete a nota; caso contrário, pausa (`Rq`). |

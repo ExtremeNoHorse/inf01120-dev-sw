@@ -63,6 +63,7 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
     - `6`: Fusa (`t`)
     - `7`: Semifusa (`x`)
     - *Exemplos*: `A:3` (Lá semínima), `C#:2` (Dó sustenido mínima), `Bb:4` (Si bemol colcheia).
+  - **Decisão do grupo — compatibilidade com a Fase 1:** notas sem duração explícita (ex.: `C`) continuam válidas e usam a semínima padrão do JFugue. A duração explícita continua disponível com `:1` a `:7`.
 - **Controle de Oitava Relativa**:
   - `?`: aumenta a oitava atual em uma unidade; ao ultrapassar 9, retorna à oitava-base da voz.
   - `V`: diminui a oitava atual em uma unidade; ao ultrapassar 0, retorna à oitava-base da voz.
@@ -77,7 +78,7 @@ Este documento descreve detalhadamente as novas funcionalidades, regras de mapea
   - Dígito par: instrumento atual + valor do dígito.
 - **Regras de Repetição e Silêncio**:
   - Minúsculas de notas (`a`, `b`, `c`, `d`, `e`, `f`, `g`): geram pausa / silêncio (`Rq`).
-  - Vogais (`O`, `I`, `U`) e consoantes não-nota (incluindo `H`): se o caractere anterior processado era uma nota, repete a última nota tocada; caso contrário, emite silêncio (`Rq`).
+  - Vogais (`O`, `I`, `U`) e consoantes não-nota (incluindo `H`): se o caractere imediatamente anterior era uma nota, repete essa nota; caso contrário, emite silêncio (`Rq`).
 
 ---
 
