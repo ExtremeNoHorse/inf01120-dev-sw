@@ -42,7 +42,7 @@ A documentação detalhada da Fase 2 está organizada na pasta [docs/](docs/):
 - [**Documentação de Implementação da Fase 2**](docs/FASE2_IMPLEMENTACAO.md): resumo das 4 mudanças, pacotes, classes e qualidade.
 - [**Arquitetura e Princípios SOLID**](docs/ARQUITETURA.md): visão de camadas, padrões de projeto e prevenção de bad smells.
 - [**Mapa de Comandos**](docs/MAPA_DE_COMANDOS.md): tabela de referência para notas, acidentes, durações, polifonia e parâmetros.
-- [**Diagrama de Classes Mermaid**](design/diagram.mmd): modelo estrutural completo e atualizado.
+- [**Diagrama de Classes Mermaid**](design/diagram.mmd): modelo estrutural completo das classes próprias do projeto.
 - [**Interface Gráfica (Swing)**](docs/INTERFACE_GRAFICA.md): como executar, telas, Clean Architecture e padrões de projeto da GUI.
 
 ## Diagrama de Classes (fonte Mermaid)
@@ -53,11 +53,11 @@ O diagrama editável está em [design/diagram.mmd](design/diagram.mmd).
 
 Cada princípio SOLID citado no enunciado é aplicado da seguinte forma na arquitetura do programa:
 
-- **S - Single Responsibility:** Cada classe tem uma única responsabilidade para mudar. `Interpreter` só interpreta arquivos de texto para Patterns do JFugue; `Player` gerencia as ações relacionadas a tocar uma música; `DomainMapper` mapeia os valores de entrada para comandos a serem executados; `FileMusicRepository` gerencia o sistema de repositório de músicas em sistema de arquivos; `AudioEngine` se encarrega de emitir os sons tocados pelo player. Uma mudança em uma dessas classes não deve afetar o funcionamento das outras.
+- **S - Single Responsibility:** Cada classe tem uma única responsabilidade para mudar. `Interpreter` só interpreta arquivos de texto para Patterns do JFugue; `Player` coordena reprodução e exportação MIDI; `DomainMapper` mapeia os valores de entrada para comandos a serem executados; `FileMusicRepository` gerencia o sistema de repositório de músicas em sistema de arquivos; `AudioEngine` se encarrega de emitir os sons tocados pelo player. Uma mudança em uma dessas classes não deve afetar o funcionamento das outras.
 - **O - Open/Closed:** Novas regras de mapeamento são adicionadas criando uma nova implementação de `Command` e registrando-a no `DomainMapper.table`, **sem modificar** `Interpreter` nem `Player`. Novos formatos de saída são adicionados implementando `AudioEngine`, sem tocar no domínio. Novas regras de validação são adicionadas a lista do `InputValidator`.
 - **L - Substituição de Liskov:** `Interpreter` opera sobre `Command.execute(PlayerConfig)` sem saber se o `Command` é `Note` ou `ConfigUpdate`. Toda `AudioEngine` é substituível: `JFuguePlayer` pode ser trocada por implementação mock em testes sem alterar `Player`.
 - **I - Segregação de Interfaces:** Interfaces são pequenas e específicas: `Command` (um método), `MusicRepository` (CRUD focado em `Music`), `AudioEngine` (contrato de playback). Nenhuma classe é forçada a implementar métodos que não usa.
-- **D - Inversão de Dependência:** `App` e `Player` dependem das abstrações `MusicRepository` e `AudioEngine`, não das classes concretas `FileMusicRepository` e `JFuguePlayer`. A composição é feita no `App`, permitindo trocar backend de persistência ou motor de áudio via injeção.
+- **D - Inversão de Dependência:** `App` depende de `MusicRepository` e `Player` depende de `AudioEngine`, não das classes concretas `FileMusicRepository` e `JFuguePlayer`. A composição é feita no `App`, permitindo trocar backend de persistência ou motor de áudio via injeção.
 
 ## Croquis de Interface
 
