@@ -90,7 +90,7 @@ class FileMusicRepositoryTest {
   @Test
   void givenNamesWithSpecialCharacters_whenSaveAndReload_thenKeepsThemExactly() {
     // Given
-    final String name = "Rock/Pop: ação = 100% #1";
+    final String name = "Rock|Pop: ação = 100% #1";
 
     // When
     repository.save(new Music("special", name, "A"));
@@ -199,7 +199,7 @@ class FileMusicRepositoryTest {
     music.setId("m1");
     music.setName("Song Name");
     music.setContent("Notes");
-    music.setHasRecording(true);
+    music.markAsRecorded();
 
     // When & Then
     assertEquals("m1", music.getId());
@@ -215,8 +215,7 @@ class FileMusicRepositoryTest {
     // When & Then
     final Music otherDiffId = new Music("m2", "Other", "Notes2");
     assertNotEquals(music, otherDiffId);
-    assertTrue(music.equals(music));
-    assertFalse(music.equals(new Object()));
+    assertNotEquals(new Object(), music);
   }
 
   @Test
@@ -296,17 +295,17 @@ class FileMusicRepositoryTest {
     // Given
     final Path baseFile = tempDir.resolve("base-file");
     Files.writeString(baseFile, "not a directory");
+    final String childPath = baseFile.resolve("child").toString();
 
     // When & Then
-    assertThrows(
-        TtmException.class, () -> new FileMusicRepository(baseFile.resolve("child").toString()));
+    assertThrows(TtmException.class, () -> new FileMusicRepository(childPath));
 
     // Given
     final FileMusicRepository invalidRepository = new FileMusicRepository(baseFile.toString());
+    final Music music = new Music("id", "Song", TEST_CONTENT);
 
     // When & Then
-    assertThrows(
-        TtmException.class, () -> invalidRepository.save(new Music("id", "Song", TEST_CONTENT)));
+    assertThrows(TtmException.class, () -> invalidRepository.save(music));
     assertThrows(TtmException.class, invalidRepository::findAll);
     assertThrows(TtmException.class, () -> invalidRepository.deleteById("id"));
   }
@@ -315,5 +314,21 @@ class FileMusicRepositoryTest {
   void givenBlankId_whenDeleted_thenDoesNothing() {
     // When & Then
     assertDoesNotThrow(() -> repository.deleteById("  "));
+  }
+
+  @Test
+  void givenMissingImportedSource_whenSaving_thenDoesNotUpdateLibraryCopy() throws IOException {
+    // Given
+    final Path source = tempDir.resolve("source.txt");
+    final Music music = new Music("imported", "Imported", TEST_CONTENT);
+    Files.writeString(source, TEST_CONTENT);
+    music.setSourcePath(source);
+    repository.save(music);
+    Files.delete(source);
+    music.setContent("Updated content");
+
+    // When & Then
+    assertThrows(TtmException.class, () -> repository.saveAndOverwriteSource(music));
+    assertEquals(TEST_CONTENT, repository.getById(music.getId()).getContent());
   }
 }

@@ -22,6 +22,16 @@ public interface MusicRepository {
   Music save(final Music music);
 
   /**
+   * Persists a music and, when it was imported, overwrites its original text file.
+   *
+   * @param music the music instance to save
+   * @return the persisted music instance
+   */
+  default Music saveAndOverwriteSource(final Music music) {
+    return save(music);
+  }
+
+  /**
    * Retrieves a {@link Music} instance by its unique identifier.
    *
    * @param id the unique identifier

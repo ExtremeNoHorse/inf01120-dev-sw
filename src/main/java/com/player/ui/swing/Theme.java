@@ -32,7 +32,7 @@ final class Theme {
   private Theme() {}
 
   /** Creates an empty border with the same top/bottom and left/right spacing. */
-  static Border padding(final int vertical, final int horizontal) {
+  static Border createBorder(final int vertical, final int horizontal) {
     return BorderFactory.createEmptyBorder(vertical, horizontal, vertical, horizontal);
   }
 
@@ -42,7 +42,7 @@ final class Theme {
     button.setBackground(ACCENT);
     button.setForeground(Color.WHITE);
     button.setFocusPainted(false);
-    button.addActionListener(e -> action.run());
+    button.addActionListener(_ -> action.run());
     return button;
   }
 
@@ -52,9 +52,9 @@ final class Theme {
     button.setFont(ICON);
     button.setToolTipText(tooltip);
     button.setContentAreaFilled(false);
-    button.setBorder(padding(GAP / 2, 10));
+    button.setBorder(createBorder(GAP / 2, 10));
     button.setFocusPainted(false);
-    button.addActionListener(e -> action.run());
+    button.addActionListener(_ -> action.run());
     return button;
   }
 }

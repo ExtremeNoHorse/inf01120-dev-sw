@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class MusicLibraryTest {
+  private static final String SAVED_CONTENT = "E:3";
+
   private MusicLibrary library;
 
   @BeforeEach
@@ -64,6 +66,51 @@ class MusicLibraryTest {
   }
 
   @Test
+  void givenImportedText_whenSavedAgain_thenOverwritesOriginalAndKeepsItsLink(
+      @TempDir final Path dir) throws IOException {
+    // Given
+    final Path libraryDir = dir.resolve("musics");
+    final Path source = dir.resolve("source.txt");
+    Files.writeString(source, "C:3");
+    final MusicLibrary firstSession =
+        new MusicLibrary(new FileMusicRepository(libraryDir.toString()));
+    final Music imported = firstSession.importFile(source);
+
+    // When
+    firstSession.saveContent(imported, "D:3");
+    final MusicLibrary secondSession =
+        new MusicLibrary(new FileMusicRepository(libraryDir.toString()));
+    final Music restored = secondSession.listAll().getFirst();
+    secondSession.saveContent(restored, SAVED_CONTENT);
+    assertEquals(SAVED_CONTENT, Files.readString(source));
+    Files.writeString(source, "F:3");
+    secondSession.rename(restored, "renamed");
+    secondSession.delete(restored);
+
+    // Then
+    assertEquals("F:3", Files.readString(source));
+    assertTrue(Files.exists(source));
+    assertTrue(secondSession.listAll().isEmpty());
+  }
+
+  @Test
+  void givenMissingImportedSource_whenSavingContent_thenThrowsPersistenceFailure(
+      @TempDir final Path dir) throws IOException {
+    // Given
+    final Path source = dir.resolve("source.txt");
+    Files.writeString(source, "C:3");
+    final Music imported = library.importFile(source);
+    Files.delete(source);
+
+    // When
+    final TtmException error =
+        assertThrows(TtmException.class, () -> library.saveContent(imported, "D:3"));
+
+    // Then
+    assertEquals(ErrorCode.PERSISTENCE_FAILURE, error.getCode());
+  }
+
+  @Test
   void givenFileWithoutTxtExtension_whenImport_thenKeepsWholeFileName(@TempDir final Path dir)
       throws IOException {
     // Given
@@ -76,9 +123,11 @@ class MusicLibraryTest {
 
   @Test
   void givenMissingFile_whenImport_thenThrowsMusicNotFound(@TempDir final Path dir) {
+    final Path missingFile = dir.resolve("none.txt");
+
     // When & Then
     final TtmException error =
-        assertThrows(TtmException.class, () -> library.importFile(dir.resolve("none.txt")));
+        assertThrows(TtmException.class, () -> library.importFile(missingFile));
     assertEquals(ErrorCode.MUSIC_NOT_FOUND, error.getCode());
   }
 
@@ -88,13 +137,13 @@ class MusicLibraryTest {
     final Music music = library.create("old");
 
     // When
-    library.saveContent(music, "E:3");
+    library.saveContent(music, SAVED_CONTENT);
     library.rename(music, "new");
     final Music stored = library.listAll().getFirst();
 
     // Then
     assertEquals("new", stored.getName());
-    assertEquals("E:3", stored.getContent());
+    assertEquals(SAVED_CONTENT, stored.getContent());
 
     // When
     library.delete(music);

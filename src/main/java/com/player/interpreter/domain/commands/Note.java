@@ -10,10 +10,8 @@ import java.util.Objects;
  *
  * <p>Supports accidentals (e.g., "#", "b") and duration figures (e.g., semibreve, semínima).
  */
-public final class Note implements Command {
+public record Note(String cmd, MusicalDuration duration) implements Command {
   private static final String VOLUME_INTENSITY_SEPARATOR = "a";
-  private final String cmd;
-  private final MusicalDuration duration;
 
   /**
    * Constructs a new {@code Note} command with no explicit duration (default behavior).
@@ -42,7 +40,8 @@ public final class Note implements Command {
    *
    * @return the command string
    */
-  public String getCmd() {
+  @Override
+  public String cmd() {
     return cmd;
   }
 
@@ -51,7 +50,8 @@ public final class Note implements Command {
    *
    * @return the {@link MusicalDuration}, or {@code null} if none
    */
-  public MusicalDuration getDuration() {
+  @Override
+  public MusicalDuration duration() {
     return duration;
   }
 

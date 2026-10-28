@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 
 /** Swing implementation of {@link MainView}: composes the panels drawn in the croquis. */
 public final class MainWindow implements MainView {
@@ -47,7 +48,7 @@ public final class MainWindow implements MainView {
     frame.add(musicList.component(), BorderLayout.WEST);
     frame.add(main, BorderLayout.CENTER);
     frame.setMinimumSize(Theme.MIN_WINDOW);
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     frame.addWindowListener(
         new WindowAdapter() {
           @Override
@@ -57,7 +58,7 @@ public final class MainWindow implements MainView {
           }
         });
 
-    new Timer(TICK_MILLIS, e -> presenter.onTick()).start();
+    new Timer(TICK_MILLIS, _ -> presenter.onTick()).start();
   }
 
   /**
@@ -105,8 +106,23 @@ public final class MainWindow implements MainView {
   }
 
   @Override
-  public void showPlaying(final boolean playing) {
-    playbackBar.showPlaying(playing);
+  public void showPlayButton() {
+    playbackBar.showPlayButton();
+  }
+
+  @Override
+  public void showPauseButton() {
+    playbackBar.showPauseButton();
+  }
+
+  @Override
+  public void enableEditorEditing() {
+    editor.enableEditing();
+  }
+
+  @Override
+  public void disableEditorEditing() {
+    editor.disableEditing();
   }
 
   @Override
@@ -142,11 +158,11 @@ public final class MainWindow implements MainView {
 
   @Override
   public Optional<Path> chooseTextFile() {
-    return FileDialogs.open(frame, "Arquivos de texto (.txt)", "txt");
+    return FileDialogs.open(frame);
   }
 
   @Override
   public Optional<Path> chooseExportFile(final String suggestedName) {
-    return FileDialogs.save(frame, "Arquivo MIDI (.mid)", "mid", suggestedName);
+    return FileDialogs.save(frame, suggestedName);
   }
 }

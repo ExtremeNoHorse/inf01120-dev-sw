@@ -1,7 +1,7 @@
 package com.player.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -123,18 +123,34 @@ class PlayerConfigTest {
   @Test
   void givenOctaveAtBoundary_whenChanged_thenRemainsWithinBounds() {
     // Given
-    final PlayerConfig maxConfig =
-        new PlayerConfig(0, PlayerConfig.MAX_OCTAVE, TEST_VOL_40, TEST_BPM_120);
-    final PlayerConfig minConfig =
-        new PlayerConfig(0, PlayerConfig.MIN_OCTAVE, TEST_VOL_40, TEST_BPM_120);
+    final PlayerConfig maxConfig = PlayerConfig.forVoice(0, TEST_BPM_120);
+    final PlayerConfig minConfig = PlayerConfig.forVoice(1, TEST_BPM_120);
+    maxConfig.setOctave(PlayerConfig.MAX_OCTAVE);
+    minConfig.setOctave(PlayerConfig.MIN_OCTAVE);
 
     // When
     maxConfig.increaseOctaveRelative();
     minConfig.decreaseOctaveRelative();
 
     // Then
-    assertEquals(PlayerConfig.MAX_OCTAVE, maxConfig.getOctave());
-    assertEquals(PlayerConfig.MIN_OCTAVE, minConfig.getOctave());
+    assertEquals(maxConfig.getBaseOctave(), maxConfig.getOctave());
+    assertEquals(minConfig.getBaseOctave(), minConfig.getOctave());
+  }
+
+  @Test
+  void givenConfig_whenCopied_thenPreservesCurrentAndBaseSettings() {
+    // Given
+    final PlayerConfig config = PlayerConfig.forVoice(2, TEST_BPM_120);
+    config.setOctave(TEST_OCTAVE_5);
+
+    // When
+    final PlayerConfig copy = new PlayerConfig(config);
+
+    // Then
+    assertEquals(config, copy);
+    assertEquals(config.getBaseOctave(), copy.getBaseOctave());
+    assertEquals(config.getBaseVolume(), copy.getBaseVolume());
+    assertEquals(config.getBaseInstrument(), copy.getBaseInstrument());
   }
 
   @Test
@@ -189,20 +205,15 @@ class PlayerConfigTest {
         new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120);
 
     // When & Then
-    assertTrue(config.equals(config));
-    assertFalse(config.equals(new Object()));
-    assertFalse(
-        config.equals(
-            new PlayerConfig(TEST_INSTRUMENT_2, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120)));
-    assertFalse(
-        config.equals(
-            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_3, TEST_VOL_3, TEST_BPM_120)));
-    assertFalse(
-        config.equals(
-            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_4, TEST_BPM_120)));
-    assertFalse(
-        config.equals(
-            new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_121)));
+    assertNotEquals(new Object(), config);
+    assertNotEquals(
+        new PlayerConfig(TEST_INSTRUMENT_2, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_120), config);
+    assertNotEquals(
+        new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_3, TEST_VOL_3, TEST_BPM_120), config);
+    assertNotEquals(
+        new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_4, TEST_BPM_120), config);
+    assertNotEquals(
+        new PlayerConfig(TEST_INSTRUMENT_1, TEST_OCTAVE_2, TEST_VOL_3, TEST_BPM_121), config);
     assertEquals(config.hashCode(), config.hashCode());
   }
 }

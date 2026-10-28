@@ -67,6 +67,7 @@ classDiagram
         <<interface>>
         +Music newMusic()
         +Music save(Music music)
+        +Music saveAndOverwriteSource(Music music)
         +Music getById(String id)
         +Music getByPath(Path path)
         +List~Music~ findAll()
@@ -87,6 +88,7 @@ classDiagram
         -String id
         -String name
         -String content
+        -Path sourcePath
         -boolean hasRecording
         +String getId()
         +void setId(String id)
@@ -94,8 +96,10 @@ classDiagram
         +void setName(String name)
         +String getContent()
         +void setContent(String content)
+        +Path getSourcePath()
+        +void setSourcePath(Path sourcePath)
         +boolean hasRecording()
-        +void setHasRecording(boolean hasRecording)
+        +void markAsRecorded()
     }
 
     class Player {
@@ -151,13 +155,13 @@ classDiagram
 
     class MusicalDuration {
         <<enumeration>>
-        SEMIBREVE
-        MINIMA
-        SEMINIMA
-        COLCHEIA
-        SEMICOLCHEIA
-        FUSA
-        SEMIFUSA
+        WHOLE_NOTE
+        HALF_NOTE
+        QUARTER_NOTE
+        EIGHTH_NOTE
+        SIXTEENTH_NOTE
+        THIRTY_SECOND
+        SIXTY_FOURTH
         -int id
         -String jfugueToken
         +int getId()
@@ -178,6 +182,7 @@ classDiagram
         -int baseOctave
         -int baseVolume
         -int baseInstrument
+        +PlayerConfig(PlayerConfig source)
         +static PlayerConfig forVoice(int voiceIndex, int bpm)
         +static Map~Integer,String~ getGeneralMidiInstruments()
         +int getInstrument()
@@ -227,7 +232,10 @@ classDiagram
         +void showEditor(Music music)
         +String editorText()
         +void showSettings(int octave, int bpm, int volume)
-        +void showPlaying(boolean playing)
+        +void showPlayButton()
+        +void showPauseButton()
+        +void enableEditorEditing()
+        +void disableEditorEditing()
         +void showProgress(int permille)
         +void highlight(List~Integer~ offsets)
     }
@@ -239,6 +247,7 @@ classDiagram
         -Music current
         +void attach(MainView view)
         +void onPlayPause()
+        +void onStop()
         +void onSave()
         +void onTick()
     }

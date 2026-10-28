@@ -20,7 +20,7 @@ final class EditorPanel {
 
   EditorPanel(final MainPresenter presenter) {
     panel.setBackground(Theme.BACKGROUND);
-    panel.setBorder(Theme.padding(Theme.PADDING, Theme.MARGIN));
+    panel.setBorder(Theme.createBorder(Theme.PADDING, Theme.MARGIN));
 
     final JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     toolbar.setOpaque(false);
@@ -29,7 +29,7 @@ final class EditorPanel {
 
     textArea.setFont(Theme.TEXT);
     textArea.setBackground(Theme.PAPER);
-    textArea.setBorder(Theme.padding(Theme.PADDING, Theme.PADDING));
+    textArea.setBorder(Theme.createBorder(Theme.PADDING, Theme.PADDING));
     panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
   }
 
@@ -44,6 +44,14 @@ final class EditorPanel {
 
   String getText() {
     return textArea.getText();
+  }
+
+  void enableEditing() {
+    textArea.setEditable(true);
+  }
+
+  void disableEditing() {
+    textArea.setEditable(false);
   }
 
   void highlight(final List<Integer> offsets) {

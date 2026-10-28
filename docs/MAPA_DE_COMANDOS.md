@@ -38,7 +38,7 @@ A duração é especificada pelo sufixo `:<número>` associado à nota (ex: `C:1
 | `:6` | Fusa | 1/32 | `t` |
 | `:7` | Semifusa | 1/64 | `x` |
 
-*Nota*: Se a nota for declarada sem sufixo de duração (ex: `C`), ela é emitida sem sufixo de tempo explícito, assumindo a duração padrão do sintetizador.
+**Decisão do grupo — compatibilidade com a Fase 1:** notas sem sufixo de duração (ex.: `C`) continuam válidas. Elas são emitidas sem marcador de tempo explícito e usam a semínima padrão do JFugue; novas entradas podem indicar a figura desejada com `:1` a `:7`.
 
 ---
 
@@ -56,7 +56,7 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 *A partir da 5ª linha, o ciclo de parâmetros reinicia (`V4` usa oitava 6, volume 100, etc.).*
 
 ### Atraso de Entrada (Delay)
-- Sintaxe: `[n]` no início da linha (ex: `[4] C:3 D:3`).
+- Sintaxe: `[n]` no início da linha (ex: `[4] C:3 D:3`), com `n` entre 0 e 10.000.
 - Efeito: Insere `n` tempos de silêncio (`Rq`) antes da primeira nota daquela voz.
 
 ---
@@ -65,8 +65,8 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 
 | Caractere | Ação | Escopo |
 |-----------|------|--------|
-| `?` | Aumenta a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
-| `V` | Diminui a oitava atual em 1, limitada ao intervalo de 0 a 9. | Voz atual |
+| `?` | Aumenta a oitava atual em 1; acima de 9 retorna à oitava-base da voz. | Voz atual |
+| `V` | Diminui a oitava atual em 1; abaixo de 0 retorna à oitava-base da voz. | Voz atual |
 | `>` | Aumenta o BPM em 10 (acelera). | Global (todas as vozes) |
 | `<` | Diminui o BPM em 10 (desacelera). | Global (todas as vozes) |
 | ` ` (Espaço) | Dobra o volume da voz (com teto máximo de 127). | Voz atual |
@@ -83,5 +83,5 @@ Cada linha do arquivo de texto corresponde a uma voz independente, executada de 
 | Caractere | Regra |
 |-----------|-------|
 | `a, b, c, d, e, f, g` (minúsculas isoladas) | Silêncio / Pausa (`Rq`). |
-| Vogais `O, I, U` e consoantes não-nota (ex: `H, J, K, L, M, N...`) | Se o caractere anterior processado era uma nota, repete essa nota; caso contrário, gera pausa (`Rq`). |
-| Outros caracteres | Se o caractere anterior era nota, repete a nota; caso contrário, pausa (`Rq`). |
+| Vogais `O, I, U` e consoantes não-nota (ex: `H, J, K, L, M, N...`) | Se o caractere imediatamente anterior era uma nota, repete essa nota; caso contrário, gera pausa (`Rq`). |
+| Outros caracteres | Se o caractere imediatamente anterior era nota, repete a nota; caso contrário, pausa (`Rq`). |

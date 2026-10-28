@@ -231,16 +231,38 @@ class MainPresenterTest {
     presenter.onPlayPause();
     assertEquals("T120 V0 I6 :CE(7,100) C6qa100", engine.played);
     assertTrue(view.playing);
+    assertFalse(view.editorEditable);
 
     // When & Then
     presenter.onPlayPause();
     assertTrue(engine.paused);
     assertFalse(view.playing);
+    assertFalse(view.editorEditable);
 
     // When & Then
     presenter.onPlayPause();
     assertTrue(engine.resumed);
     assertTrue(view.playing);
+    assertFalse(view.editorEditable);
+  }
+
+  @Test
+  void givenPlayingMusic_whenStopped_thenStopsEngineAndUnlocksEditor() {
+    // Given
+    openNew(SONG);
+    view.editorText = NOTE;
+    presenter.onPlayPause();
+    assertFalse(view.editorEditable);
+
+    // When
+    presenter.onStop();
+
+    // Then
+    assertTrue(engine.stopped);
+    assertFalse(view.playing);
+    assertTrue(view.editorEditable);
+    assertEquals(0, view.progress);
+    assertTrue(view.highlight.isEmpty());
   }
 
   @Test
@@ -474,6 +496,7 @@ class MainPresenterTest {
     private String editorText = "";
     private List<Integer> settings = List.of();
     private boolean playing;
+    private boolean editorEditable = true;
     private int progress = -1;
     private List<Integer> highlight = List.of();
     private boolean confirmAnswer;
@@ -508,8 +531,23 @@ class MainPresenterTest {
     }
 
     @Override
-    public void showPlaying(final boolean isPlaying) {
-      playing = isPlaying;
+    public void showPlayButton() {
+      playing = false;
+    }
+
+    @Override
+    public void showPauseButton() {
+      playing = true;
+    }
+
+    @Override
+    public void enableEditorEditing() {
+      editorEditable = true;
+    }
+
+    @Override
+    public void disableEditorEditing() {
+      editorEditable = false;
     }
 
     @Override

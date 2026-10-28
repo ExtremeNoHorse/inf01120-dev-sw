@@ -56,7 +56,7 @@ class AppTest {
       try {
         final String content = Files.readString(path);
         return new Music(path.getFileName().toString(), "From Path", content);
-      } catch (final IOException e) {
+      } catch (final IOException _) {
         return null;
       }
     }
@@ -81,16 +81,24 @@ class AppTest {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+      /*no-op*/
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+      /*no-op*/
+    }
 
     @Override
-    public void stop() {}
+    public void stop() {
+      /*no-op*/
+    }
 
     @Override
-    public void seek(final int index) {}
+    public void seek(final int index) {
+      /*no-op*/
+    }
 
     @Override
     public long getTickPosition() {
@@ -144,7 +152,7 @@ class AppTest {
 
     final InputValidator failingValidator = new InputValidator();
     failingValidator.addRule(
-        input -> {
+        _ -> {
           throw new TtmException(ErrorCode.INVALID_INPUT, "forced validation failure");
         });
     final Player player = new Player(new Interpreter(), mockAudioEngine);
@@ -161,7 +169,7 @@ class AppTest {
       App.main(new String[0]);
     } catch (final TtmException exception) {
       assertEquals(ErrorCode.AUDIO_UNAVAILABLE, exception.getCode());
-      Assumptions.abort("Default App requires an available MIDI/audio device");
+      Assumptions.abort("Default App requires an available MIDI|audio device");
     }
   }
 

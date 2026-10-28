@@ -1,5 +1,6 @@
 package com.player.repository;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 /** Represents a musical score or text source in the TTM system. */
@@ -7,6 +8,7 @@ public final class Music {
   private String id;
   private String name;
   private String content;
+  private Path sourcePath;
   private boolean hasRecording;
 
   /** Constructs an empty {@code Music} instance. */
@@ -25,6 +27,7 @@ public final class Music {
     this.id = id;
     this.name = name;
     this.content = content;
+    this.sourcePath = null;
     this.hasRecording = false;
   }
 
@@ -83,6 +86,24 @@ public final class Music {
   }
 
   /**
+   * Retrieves the original text file imported for this music, when one exists.
+   *
+   * @return the original file path, or {@code null} for music created in the library
+   */
+  public Path getSourcePath() {
+    return sourcePath;
+  }
+
+  /**
+   * Sets the original text file that must be updated when this music is saved.
+   *
+   * @param sourcePath the imported text file, or {@code null} for library-only music
+   */
+  public void setSourcePath(final Path sourcePath) {
+    this.sourcePath = sourcePath;
+  }
+
+  /**
    * Checks if a recorded/exported audio version is available.
    *
    * @return {@code true} if recorded, {@code false} otherwise
@@ -91,13 +112,9 @@ public final class Music {
     return hasRecording;
   }
 
-  /**
-   * Updates whether a recorded/exported audio version is available.
-   *
-   * @param hasRecording recording status flag
-   */
-  public void setHasRecording(final boolean hasRecording) {
-    this.hasRecording = hasRecording;
+  /** Marks that a recorded/exported audio version is available. */
+  public void markAsRecorded() {
+    this.hasRecording = true;
   }
 
   @Override

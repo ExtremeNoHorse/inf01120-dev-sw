@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class InterpreterTest {
 
@@ -26,11 +28,8 @@ class InterpreterTest {
 
   @Test
   void givenNullInput_whenInterpret_thenThrowsTtmException() {
-    // Given
-    final String nullText = null;
-
-    // When & Then
-    final TtmException ex = assertThrows(TtmException.class, () -> interpreter.interpret(nullText));
+    // Given & When & Then
+    final TtmException ex = assertThrows(TtmException.class, () -> interpreter.interpret(null));
     assertEquals(ErrorCode.INVALID_INPUT, ex.getCode());
   }
 
@@ -70,6 +69,12 @@ class InterpreterTest {
   }
 
   @Test
+  void givenNoteWithoutDuration_whenInterpret_thenUsesJfugueDefaultDuration() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) C6a100", interpreter.interpret("C"));
+  }
+
+  @Test
   void givenMultipleLines_whenInterpret_thenGeneratesPolyphonicVoices() {
     // Given
     final String text = "C:3\nE:3\nG:3\nC:1";
@@ -98,65 +103,40 @@ class InterpreterTest {
     assertTrue(result.contains("V2 I0 :CE(7,100) D4qa60"));
   }
 
-  @Test
-  void givenDelayPrefix_whenInterpret_thenInsertsInitialRestBeats() {
-    // Given
-    final String text = "[3] A:3";
-
-    // When
-    final String result = interpreter.interpret(text);
-
-    // Then
-    assertTrue(result.contains("V0 I6 :CE(7,100) Rq Rq Rq A6qa100"));
+  @ParameterizedTest
+  @CsvSource({
+    "'[3] A:3', 'V0 I6 :CE(7,100) Rq Rq Rq A6qa100'",
+    "'A#:3Bb:2', 'A#6qa100'",
+    "'A#:3Bb:2', 'Bb6ha100'",
+    "'C:3H', 'C6qa100 C6qa100'",
+    "'HC:3', 'Rq C6qa100'",
+    "'ab', 'Rq Rq'"
+  })
+  void givenTextCommand_whenInterpret_thenGeneratesExpectedToken(
+      final String text, final String expectedToken) {
+    assertTrue(interpreter.interpret(text).contains(expectedToken));
   }
 
   @Test
-  void givenNotesWithAccidentals_whenInterpret_thenGeneratesCorrectJfugueAccidentals() {
-    // Given
-    final String text = "A#:3Bb:2";
-
-    // When
-    final String result = interpreter.interpret(text);
-
-    // Then
-    assertTrue(result.contains("A#6qa100"));
-    assertTrue(result.contains("Bb6ha100"));
+  void givenControlBetweenNoteAndFallback_whenInterpret_thenFallbackEmitsRest() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) A6a100 I24 Rq", interpreter.interpret("A!H"));
   }
 
   @Test
-  void givenConsecutiveConsonants_whenPreviousWasNote_thenRepeatsLastNote() {
-    // Given
-    final String text = "C:3H";
-
-    // When
-    final String result = interpreter.interpret(text);
-
-    // Then
-    assertTrue(result.contains("C6qa100 C6qa100"));
+  void givenConsecutiveFallbacks_whenInterpret_thenOnlyFirstRepeatsPreviousNote() {
+    // Given & When & Then
+    assertEquals("T120 V0 I6 :CE(7,100) A6a100 A6a100 Rq", interpreter.interpret("AHH"));
   }
 
   @Test
-  void givenConsonantsWithoutPreviousNote_whenInterpret_thenProducesRest() {
-    // Given
-    final String text = "HC:3";
-
+  void givenDelayAboveMaximum_whenInterpret_thenThrowsInvalidInput() {
     // When
-    final String result = interpreter.interpret(text);
+    final TtmException error =
+        assertThrows(TtmException.class, () -> interpreter.interpret("[10001] A:3"));
 
     // Then
-    assertTrue(result.contains("Rq C6qa100"));
-  }
-
-  @Test
-  void givenLowercaseNoteLetters_whenInterpret_thenProducesRests() {
-    // Given
-    final String text = "ab";
-
-    // When
-    final String result = interpreter.interpret(text);
-
-    // Then
-    assertTrue(result.contains("Rq Rq"));
+    assertEquals(ErrorCode.INVALID_INPUT, error.getCode());
   }
 
   @Test
@@ -171,6 +151,16 @@ class InterpreterTest {
     assertTrue(result.contains("T130"));
     assertTrue(result.contains("I24"));
     assertTrue(result.contains("C7a100"));
+  }
+
+  @Test
+  void givenTempoChangeInOneVoice_whenInterpret_thenKeepsItGlobalForAllVoices() {
+    // When
+    final String result = interpreter.interpret("C:3>C:3\nC:3C:3");
+
+    // Then
+    assertEquals(
+        "T120 V0 I6 :CE(7,100) C6qa100 T130 C6qa100 V1 I20 :CE(7,100) C5qa80 C5qa80", result);
   }
 
   @Test
@@ -217,7 +207,7 @@ class InterpreterTest {
   void givenCommandReturningNull_whenInterpret_thenSkipsItsResult() {
     // Given
     final Map<String, Command> table = new HashMap<>();
-    table.put("?", config -> null);
+    table.put("?", _ -> null);
     final Interpreter customInterpreter =
         new Interpreter(
             new DomainMapper(table), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));

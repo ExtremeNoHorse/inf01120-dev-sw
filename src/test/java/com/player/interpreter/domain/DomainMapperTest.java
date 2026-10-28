@@ -62,7 +62,7 @@ class DomainMapperTest {
     // When & Then
     assertTrue(mapper.supports(token));
     final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
-    assertEquals(token, command.getCmd());
+    assertEquals(token, command.cmd());
   }
 
   @ParameterizedTest
@@ -75,8 +75,8 @@ class DomainMapperTest {
     // When & Then
     assertTrue(mapper.supports(token));
     final Note command = assertInstanceOf(Note.class, mapper.toDomain(token));
-    assertEquals(expectedNote, command.getCmd());
-    assertEquals(expectedDuration, command.getDuration());
+    assertEquals(expectedNote, command.cmd());
+    assertEquals(expectedDuration, command.duration());
   }
 
   @Test
@@ -88,25 +88,16 @@ class DomainMapperTest {
     final Note command = assertInstanceOf(Note.class, mapper.toDomain("A#"));
 
     // Then
-    assertEquals("A#", command.getCmd());
-    assertNull(command.getDuration());
+    assertEquals("A#", command.cmd());
+    assertNull(command.duration());
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"?", "V", ">", "<", " "})
-  void givenDefaultMapper_whenMappingControl_thenReturnsConfigUpdateCommand(final String token) {
-    // Given
-    final DomainMapper mapper = DomainMapper.createDefault();
-
-    // When & Then
-    assertTrue(mapper.supports(token));
-    assertInstanceOf(ConfigUpdate.class, mapper.toDomain(token));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"!", ";", ",", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"})
-  void givenDefaultMapper_whenMappingInstrumentToken_thenReturnsConfigUpdateCommand(
-      final String token) {
+  @ValueSource(
+      strings = {
+        "?", "V", ">", "<", " ", "!", ";", ",", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+      })
+  void givenDefaultMapper_whenMappingSymbols_thenReturnsSymbolCommand(final String token) {
     // Given
     final DomainMapper mapper = DomainMapper.createDefault();
 

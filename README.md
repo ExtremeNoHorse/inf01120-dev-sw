@@ -1,5 +1,7 @@
 # Trabalho Prático INF01120 - Desenvolvimento de Software
 
+**Grupo 1**
+
 ## Autores
 - André Schaidhauer Luckmann;
 - Arthur Von Groll dos Santos;
@@ -13,32 +15,25 @@ produzirá uma sequência de notas musicais que poderá ser reproduzida pelo JFu
 
 ## Lista de Requisitos
 
-### Lista de Requisitos Funcionais Planejados
+### Requisitos Funcionais (RF)
 
-> Os itens abaixo descrevem o escopo da solução. A interface gráfica dos croquis está implementada em Swing (ver [Interface Gráfica](docs/INTERFACE_GRAFICA.md)).
+> A interface gráfica dos croquis está implementada em Swing (ver [Interface Gráfica](docs/INTERFACE_GRAFICA.md)).
 
-1. Ao iniciar, o sistema exibe a lista de músicas salvas ("Minhas músicas") e permite criar uma nova música a partir do upload de um arquivo `.txt` ou da digitação/colagem direta em um campo de texto na interface.
-2. O sistema interpreta o texto-fonte **caractere por caractere**, aplicando a seguinte tabela de mapeamento:
-A tabela completa está em [Mapa de Comandos](docs/MAPA_DE_COMANDOS.md).
-3. O usuário pode selecionar uma música da lista para reproduzi-la.
-4. O usuário pode controlar o playback ao vivo: play, pause, resume, stop e navegar pela música.
-5. O usuário pode configurar parâmetros musicais da reprodução: BPM, oitava, volume e instrumento inicial.
-6. O usuário pode renomear e deletar uma música salva.
-7. O usuário pode exportar a música interpretada como arquivo em um caminho do filesystem local de sua escolha.
+1. **RF01 — Biblioteca e entrada:** listar músicas, criar por digitação e importar arquivo TXT.
+2. **RF02 — Salvar origem:** ao editar música importada, sobrescrever o TXT original sem apagá-lo ao remover a cópia da biblioteca.
+3. **RF03 — Interpretação:** mapear o texto caractere a caractere, com notas A–G, acidentes, sete durações, quatro vozes polifônicas, atraso e parâmetros por voz. A tabela completa está no [Mapa de Comandos](docs/MAPA_DE_COMANDOS.md).
+4. **RF04 — Reprodução:** tocar, pausar, retomar, parar, navegar e destacar o trecho corrente sem permitir edição durante o playback.
+5. **RF05 — Configuração:** ajustar BPM global, oitava e volume; aplicar instrumentos-base distintos às vozes e trocá-los por comandos do texto.
+6. **RF06 — MIDI:** exportar MIDI válido no nome e diretório escolhidos pelo usuário, com confirmação antes de substituir um arquivo existente.
+7. **RF07 — Biblioteca:** renomear e deletar a cópia local de uma música.
 
-<!-- Fora de escopo Fase 1, mantidos como referência para fases futuras:
-- Modo interativo por teclado (pressionar teclas toca instantaneamente).
-- Destaque visual do trecho corrente durante o playback (sincronizado com a reprodução).
--->
+### Requisitos Não Funcionais (RNF)
 
-### Lista de Requisitos Não Funcionais
-
-1. **Modularidade por responsabilidade:** O código é organizado em módulos coesos alinhados ao diagrama de classes: entrada e validação (`InputValidator`), persistência (`MusicRepository` + `FileMusicRepository`), interpretação e mapeamento (`Interpreter` + `DomainMapper` + `Command`), execução de áudio (`Player` + `AudioEngine` + `JFuguePlayer`) e composição da aplicação (`App`). Interfaces isolam detalhes trocáveis (motor de áudio, meio de persistência).
-2. **Tratamento de erros centralizado:** Erros de domínio são modelados por uma única hierarquia de exceptions e códigos internos, sem stack traces vazando para a UI.
-3. **Testabilidade:** Cada módulo será coberto por testes unitários para garantir o funcionamento correto.
-4. **Padronização de estilo automática.** Usaremos ferramentas de Linters para garantir a padronização do estilo do código entre membros da equipe.
-5. **Repositório GitHub e fluxo de PR.** Toda mudança deverá passar por revisão por pares dos membros do grupo para evitar a introdução de bugs e garantir a distribuição de conhecimento do código entre a equipe.
-6. **Pipeline CI/CD.** Usaremos pipelines de CI/CD para build automático de artefatos, checar qualidade de código e evitar bad smells e executar testes que garantem integridade a cada entrega.
+1. **RNF01 — Modularidade:** módulos coesos e dependências por interfaces para áudio e persistência.
+2. **RNF02 — Erros:** exceções de domínio e mensagens controladas na interface.
+3. **RNF03 — Testabilidade:** testes automatizados para domínio, persistência, presenter, MIDI e regras de mapeamento.
+4. **RNF04 — Qualidade:** Spotless, Checkstyle, SpotBugs, JaCoCo e CI executados por mvn verify.
+5. **RNF05 — Manutenibilidade:** repositório Git, histórico de PRs e documentação de arquitetura, comandos e interface.
 
 
 ## Documentação Técnica (Fase 2)
@@ -92,11 +87,11 @@ Ao abrir o programa, o usuário pode escolher criar uma nova música ou fazer o 
 
 ### Tela 2 — Editor / Revisor de texto com salvar
 
-Após a escolha da Tela 1, o painel direito vira uma **área de texto editável** exibindo o conteúdo (digitado do zero ou carregado de arquivo `.txt`) com barra de rolagem, e um botão **"salvar"** ancorado no topo direito. Ao clicar em salvar, o usuário deverá escolher um local no sistema de arquivos para salvar o arquivo da música. A sidebar permanece à esquerda para que o usuário possa abandonar a criação clicando em uma música existente.
+Após a escolha da Tela 1, o painel direito vira uma **área de texto editável** com barra de rolagem e botão **"salvar"**. Textos criados ficam na biblioteca local; textos importados também atualizam o arquivo TXT de origem. A sidebar permanece à esquerda para que o usuário possa abandonar a criação clicando em uma música existente.
 
 ### Tela 3 — Menu de contexto na sidebar
 
-Clicar com o botão direito sobre um item da lista "Minhas músicas" abre um menu de contexto flutuante com três ações: **renomear**, **deletar** e **exportar música**. O menu aparece ancorado ao item clicado, deixando claro **qual** música será afetada (a linha selecionada fica destacada), o que reduz o risco de deleção equivocada. Renomear e deletar abrirão diálogos modais em etapa subsequente, e exportar dispara o seletor de arquivos.
+Clicar com o botão direito sobre um item da lista "Minhas músicas" seleciona o item e abre um menu de contexto com **renomear**, **deletar** e **exportar música**. Cliques em área vazia não abrem o menu, reduzindo o risco de ação na música errada.
 
 ### Tela 4 — Player em reprodução com destaque do trecho corrente
 
