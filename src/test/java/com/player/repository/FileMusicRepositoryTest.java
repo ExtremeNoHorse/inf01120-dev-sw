@@ -199,12 +199,13 @@ class FileMusicRepositoryTest {
     music.setId("m1");
     music.setName("Song Name");
     music.setContent("Notes");
-    music.setHasRecording(true);
+    music.markAsRecorded();
 
     // When & Then
     assertEquals("m1", music.getId());
     assertEquals("Song Name", music.getName());
     assertEquals("Notes", music.getContent());
+    assertTrue(music.hasRecording());
 
     // When & Then
     final Music otherSameId = new Music("m1", "Other", "Notes2");
@@ -313,5 +314,21 @@ class FileMusicRepositoryTest {
   void givenBlankId_whenDeleted_thenDoesNothing() {
     // When & Then
     assertDoesNotThrow(() -> repository.deleteById("  "));
+  }
+
+  @Test
+  void givenMissingImportedSource_whenSaving_thenDoesNotUpdateLibraryCopy() throws IOException {
+    // Given
+    final Path source = tempDir.resolve("source.txt");
+    final Music music = new Music("imported", "Imported", TEST_CONTENT);
+    Files.writeString(source, TEST_CONTENT);
+    music.setSourcePath(source);
+    repository.save(music);
+    Files.delete(source);
+    music.setContent("Updated content");
+
+    // When & Then
+    assertThrows(TtmException.class, () -> repository.saveAndOverwriteSource(music));
+    assertEquals(TEST_CONTENT, repository.getById(music.getId()).getContent());
   }
 }

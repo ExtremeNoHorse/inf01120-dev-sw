@@ -106,13 +106,23 @@ public final class MainWindow implements MainView {
   }
 
   @Override
-  public void showPlaying(final boolean playing) {
-    playbackBar.showPlaying(playing);
+  public void showPlayButton() {
+    playbackBar.showPlayButton();
   }
 
   @Override
-  public void setEditorEditable(final boolean editable) {
-    editor.setEditable(editable);
+  public void showPauseButton() {
+    playbackBar.showPauseButton();
+  }
+
+  @Override
+  public void enableEditorEditing() {
+    editor.enableEditing();
+  }
+
+  @Override
+  public void disableEditorEditing() {
+    editor.disableEditing();
   }
 
   @Override

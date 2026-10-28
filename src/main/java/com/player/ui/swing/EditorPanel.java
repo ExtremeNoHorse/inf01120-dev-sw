@@ -46,8 +46,12 @@ final class EditorPanel {
     return textArea.getText();
   }
 
-  void setEditable(final boolean editable) {
-    textArea.setEditable(editable);
+  void enableEditing() {
+    textArea.setEditable(true);
+  }
+
+  void disableEditing() {
+    textArea.setEditable(false);
   }
 
   void highlight(final List<Integer> offsets) {

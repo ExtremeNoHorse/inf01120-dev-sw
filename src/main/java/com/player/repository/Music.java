@@ -112,13 +112,9 @@ public final class Music {
     return hasRecording;
   }
 
-  /**
-   * Updates whether a recorded/exported audio version is available.
-   *
-   * @param hasRecording recording status flag
-   */
-  public void setHasRecording(final boolean hasRecording) {
-    this.hasRecording = hasRecording;
+  /** Marks that a recorded/exported audio version is available. */
+  public void markAsRecorded() {
+    this.hasRecording = true;
   }
 
   @Override

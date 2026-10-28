@@ -313,8 +313,16 @@ public final class MainPresenter {
 
   private void setState(final PlaybackState newState) {
     state = newState;
-    view.showPlaying(newState == PlaybackState.PLAYING);
-    view.setEditorEditable(newState == PlaybackState.STOPPED);
+    if (newState == PlaybackState.PLAYING) {
+      view.showPauseButton();
+    } else {
+      view.showPlayButton();
+    }
+    if (newState == PlaybackState.STOPPED) {
+      view.enableEditorEditing();
+    } else {
+      view.disableEditorEditing();
+    }
   }
 
   private void refreshList() {

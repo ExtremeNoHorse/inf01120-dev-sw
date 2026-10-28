@@ -144,7 +144,7 @@ public final class Player {
       try (OutputStream out = Files.newOutputStream(targetPath)) {
         MidiFileManager.savePatternToMidi(pattern, out);
       }
-      music.setHasRecording(true);
+      music.markAsRecorded();
       return targetPath;
     } catch (final IOException e) {
       throw new TtmException(

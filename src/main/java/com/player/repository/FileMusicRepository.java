@@ -56,21 +56,33 @@ public final class FileMusicRepository implements MusicRepository {
 
   @Override
   public Music save(final Music music) {
-    return save(music, false);
+    prepareToSave(music);
+    return saveLibraryCopy(music);
   }
 
-  private Music save(final Music music, final boolean overwriteSource) {
+  @Override
+  public Music saveAndOverwriteSource(final Music music) {
+    prepareToSave(music);
+    try {
+      overwriteSource(music);
+    } catch (final IOException e) {
+      throw new TtmException(
+          ErrorCode.PERSISTENCE_FAILURE, "Falha ao salvar a música: " + music.getId(), e);
+    }
+    return saveLibraryCopy(music);
+  }
+
+  private static void prepareToSave(final Music music) {
     Objects.requireNonNull(music, "Music cannot be null");
     if (music.getId() == null || music.getId().trim().isEmpty()) {
       music.setId(UUID.randomUUID().toString());
     }
+  }
 
+  private Music saveLibraryCopy(final Music music) {
     final Path filePath = baseDir.resolve(music.getId() + FILE_EXTENSION);
     try {
       final String content = music.getContent() != null ? music.getContent() : "";
-      if (overwriteSource) {
-        saveSource(music.getSourcePath(), content);
-      }
       Files.writeString(filePath, content);
       final Properties names = loadNames();
       if (music.getName() != null) {
@@ -86,25 +98,51 @@ public final class FileMusicRepository implements MusicRepository {
   }
 
   @Override
-  public Music saveAndOverwriteSource(final Music music) {
-    return save(music, true);
-  }
-
-  @Override
   public Music getById(final String id) {
     if (id == null || id.trim().isEmpty()) {
       return null;
     }
     final Path filePath = baseDir.resolve(id + FILE_EXTENSION);
-    return read(filePath, true);
+    return readLibraryMusic(filePath);
   }
 
   @Override
   public Music getByPath(final Path path) {
-    return read(path, false);
+    return readExternalMusic(path);
   }
 
-  private Music read(final Path path, final boolean includeSourcePath) {
+  private Music readExternalMusic(final Path path) {
+    try {
+      final Music music = readMusic(path);
+      if (music == null) {
+        return null;
+      }
+      restoreName(music, loadNames());
+      return music;
+    } catch (final IOException e) {
+      throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
+    }
+  }
+
+  private Music readLibraryMusic(final Path path) {
+    try {
+      final Music music = readMusic(path);
+      if (music == null) {
+        return null;
+      }
+      final Properties names = loadNames();
+      restoreName(music, names);
+      final String sourcePath = names.getProperty(sourceKey(music.getId()));
+      if (sourcePath != null) {
+        music.setSourcePath(Path.of(sourcePath));
+      }
+      return music;
+    } catch (final IOException e) {
+      throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
+    }
+  }
+
+  private static Music readMusic(final Path path) throws IOException {
     if (path == null || !Files.exists(path)) {
       return null;
     }
@@ -112,25 +150,13 @@ public final class FileMusicRepository implements MusicRepository {
     if (fileNamePath == null) {
       return null;
     }
-    try {
-      final String content = Files.readString(path);
-      final String fileName = fileNamePath.toString();
-      final String id =
-          fileName.endsWith(FILE_EXTENSION)
-              ? fileName.substring(0, fileName.length() - FILE_EXTENSION.length())
-              : fileName;
-      final Properties names = loadNames();
-      final Music music = new Music(id, names.getProperty(id, defaultName(id)), content);
-      if (includeSourcePath) {
-        final String sourcePath = names.getProperty(sourceKey(id));
-        if (sourcePath != null) {
-          music.setSourcePath(Path.of(sourcePath));
-        }
-      }
-      return music;
-    } catch (final IOException e) {
-      throw new TtmException(ErrorCode.PERSISTENCE_FAILURE, "Erro ao ler o arquivo: " + path, e);
-    }
+    final String content = Files.readString(path);
+    final String fileName = fileNamePath.toString();
+    final String id =
+        fileName.endsWith(FILE_EXTENSION)
+            ? fileName.substring(0, fileName.length() - FILE_EXTENSION.length())
+            : fileName;
+    return new Music(id, defaultName(id), content);
   }
 
   @Override
@@ -140,7 +166,7 @@ public final class FileMusicRepository implements MusicRepository {
       final List<Path> txtFiles = paths.filter(p -> p.toString().endsWith(FILE_EXTENSION)).toList();
 
       for (final Path path : txtFiles) {
-        final Music music = read(path, true);
+        final Music music = readLibraryMusic(path);
         if (music != null) {
           musicList.add(music);
         }
@@ -190,14 +216,19 @@ public final class FileMusicRepository implements MusicRepository {
     }
   }
 
-  private static void saveSource(final Path sourcePath, final String content) throws IOException {
+  private static void overwriteSource(final Music music) throws IOException {
+    final Path sourcePath = music.getSourcePath();
     if (sourcePath == null) {
       return;
     }
     if (!Files.isRegularFile(sourcePath)) {
       throw new IOException("Arquivo de origem não encontrado: " + sourcePath);
     }
-    Files.writeString(sourcePath, content);
+    Files.writeString(sourcePath, music.getContent() != null ? music.getContent() : "");
+  }
+
+  private static void restoreName(final Music music, final Properties names) {
+    music.setName(names.getProperty(music.getId(), defaultName(music.getId())));
   }
 
   private static void storeSourcePath(final Properties names, final Music music) {

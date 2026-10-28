@@ -45,19 +45,17 @@ public interface MainView {
    */
   void showSettings(int octave, int bpm, int volume);
 
-  /**
-   * Toggles the play/pause button.
-   *
-   * @param playing {@code true} to show the pause icon
-   */
-  void showPlaying(boolean playing);
+  /** Shows the play icon on the playback button. */
+  void showPlayButton();
 
-  /**
-   * Enables or disables editing of the displayed source text.
-   *
-   * @param editable whether the source text may be changed
-   */
-  void setEditorEditable(boolean editable);
+  /** Shows the pause icon on the playback button. */
+  void showPauseButton();
+
+  /** Allows editing of the displayed source text. */
+  void enableEditorEditing();
+
+  /** Prevents editing of the displayed source text. */
+  void disableEditorEditing();
 
   /**
    * Moves the progress bar.
@@ -92,7 +90,7 @@ public interface MainView {
    *
    * @param message the question
    * @param initialValue the pre-filled answer
-   * @return the answer, or empty if cancelled
+   * @return the answer, or empty if canceled
    */
   Optional<String> askText(String message, String initialValue);
 
@@ -107,7 +105,7 @@ public interface MainView {
   /**
    * Lets the user pick a text file to import.
    *
-   * @return the chosen file, or empty if cancelled
+   * @return the chosen file, or empty if canceled
    */
   Optional<Path> chooseTextFile();
 
@@ -115,7 +113,7 @@ public interface MainView {
    * Lets the user pick where to save the exported MIDI file.
    *
    * @param suggestedName the default file name
-   * @return the chosen file, or empty if cancelled
+   * @return the chosen file, or empty if canceled
    */
   Optional<Path> chooseExportFile(String suggestedName);
 }

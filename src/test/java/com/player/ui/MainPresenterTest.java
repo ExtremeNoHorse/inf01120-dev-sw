@@ -231,16 +231,19 @@ class MainPresenterTest {
     presenter.onPlayPause();
     assertEquals("T120 V0 I6 :CE(7,100) C6qa100", engine.played);
     assertTrue(view.playing);
+    assertFalse(view.editorEditable);
 
     // When & Then
     presenter.onPlayPause();
     assertTrue(engine.paused);
     assertFalse(view.playing);
+    assertFalse(view.editorEditable);
 
     // When & Then
     presenter.onPlayPause();
     assertTrue(engine.resumed);
     assertTrue(view.playing);
+    assertFalse(view.editorEditable);
   }
 
   @Test
@@ -528,13 +531,23 @@ class MainPresenterTest {
     }
 
     @Override
-    public void showPlaying(final boolean isPlaying) {
-      playing = isPlaying;
+    public void showPlayButton() {
+      playing = false;
     }
 
     @Override
-    public void setEditorEditable(final boolean editable) {
-      editorEditable = editable;
+    public void showPauseButton() {
+      playing = true;
+    }
+
+    @Override
+    public void enableEditorEditing() {
+      editorEditable = true;
+    }
+
+    @Override
+    public void disableEditorEditing() {
+      editorEditable = false;
     }
 
     @Override

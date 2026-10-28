@@ -83,8 +83,12 @@ final class PlaybackBar {
     updating = false;
   }
 
-  void showPlaying(final boolean playing) {
-    playButton.setText(playing ? PAUSE : PLAY);
+  void showPlayButton() {
+    playButton.setText(PLAY);
+  }
+
+  void showPauseButton() {
+    playButton.setText(PAUSE);
   }
 
   void showProgress(final int permille) {

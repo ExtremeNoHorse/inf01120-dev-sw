@@ -99,7 +99,7 @@ classDiagram
         +Path getSourcePath()
         +void setSourcePath(Path sourcePath)
         +boolean hasRecording()
-        +void setHasRecording(boolean hasRecording)
+        +void markAsRecorded()
     }
 
     class Player {
@@ -232,8 +232,10 @@ classDiagram
         +void showEditor(Music music)
         +String editorText()
         +void showSettings(int octave, int bpm, int volume)
-        +void showPlaying(boolean playing)
-        +void setEditorEditable(boolean editable)
+        +void showPlayButton()
+        +void showPauseButton()
+        +void enableEditorEditing()
+        +void disableEditorEditing()
         +void showProgress(int permille)
         +void highlight(List~Integer~ offsets)
     }
