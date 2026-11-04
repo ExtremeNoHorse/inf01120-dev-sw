@@ -53,12 +53,17 @@ classDiagram
         -InputValidator validator
         -MusicRepository repository
         -Player player
+        +App()
+        +App(InputValidator validator, MusicRepository repository, Player player)
+        +MainPresenter createPresenter()
         ~static void main(String[] args)
         +int run(String[] args)
     }
 
     class InputValidator {
         -List~Predicate~String~~ rules
+        +InputValidator()
+        +InputValidator(List~Predicate~String~~ rules)
         +void addRule(Predicate~String~ rule)
         +void validate(String input)
     }
@@ -76,8 +81,10 @@ classDiagram
 
     class FileMusicRepository {
         -Path baseDir
+        +FileMusicRepository(String directoryPath)
         +Music newMusic()
         +Music save(Music music)
+        +Music saveAndOverwriteSource(Music music)
         +Music getById(String id)
         +Music getByPath(Path path)
         +List~Music~ findAll()
@@ -90,6 +97,8 @@ classDiagram
         -String content
         -Path sourcePath
         -boolean hasRecording
+        +Music()
+        +Music(String id, String name, String content)
         +String getId()
         +void setId(String id)
         +String getName()
@@ -100,11 +109,14 @@ classDiagram
         +void setSourcePath(Path sourcePath)
         +boolean hasRecording()
         +void markAsRecorded()
+        +boolean equals(Object obj)
+        +int hashCode()
     }
 
     class Player {
         -Interpreter interpreter
         -AudioEngine audioEngine
+        +Player(Interpreter interpreter, AudioEngine audioEngine)
         +void play(Music music)
         +void pause()
         +void resume()
@@ -123,6 +135,8 @@ classDiagram
         -DomainMapper mapper
         -PlayerConfig playerConfig
         -StringBuilder pattern
+        +Interpreter()
+        +Interpreter(DomainMapper mapper, PlayerConfig playerConfig)
         +void configure(PlayerConfig config)
         +PlayerConfig getPlayerConfig()
         +String interpret(String text)
@@ -131,6 +145,7 @@ classDiagram
 
     class DomainMapper {
         -Map~String,Command~ table
+        +DomainMapper(Map~String,Command~ table)
         +static DomainMapper createDefault()
         +Command toDomain(String c)
         +boolean supports(String c)
@@ -147,8 +162,8 @@ classDiagram
         -MusicalDuration duration
         +Note(String cmd)
         +Note(String cmd, MusicalDuration duration)
-        +String getCmd()
-        +MusicalDuration getDuration()
+        +String cmd()
+        +MusicalDuration duration()
         +String execute(PlayerConfig config)
         -static String buildJfugueToken(String jfugueNote, MusicalDuration duration, PlayerConfig config)
     }
@@ -166,11 +181,14 @@ classDiagram
         -String jfugueToken
         +int getId()
         +String getJfugueToken()
+        +double getBeats()
+        +static MusicalDuration fromJfugueToken(String jfugueToken)
         +static MusicalDuration fromId(int id)
     }
 
     class ConfigUpdate {
         -Function~PlayerConfig, String~ updateAction
+        +ConfigUpdate(Function~PlayerConfig,String~ updateAction)
         +String execute(PlayerConfig config)
     }
 
@@ -182,6 +200,7 @@ classDiagram
         -int baseOctave
         -int baseVolume
         -int baseInstrument
+        +PlayerConfig(int instrument, int octave, int volume, int bpm)
         +PlayerConfig(PlayerConfig source)
         +static PlayerConfig forVoice(int voiceIndex, int bpm)
         +static Map~Integer,String~ getGeneralMidiInstruments()
@@ -217,6 +236,7 @@ classDiagram
 
     class MusicLibrary {
         -MusicRepository repository
+        +MusicLibrary(MusicRepository repository)
         +List~Music~ listAll()
         +Music create(String name)
         +Music importFile(Path source)
@@ -238,6 +258,12 @@ classDiagram
         +void disableEditorEditing()
         +void showProgress(int permille)
         +void highlight(List~Integer~ offsets)
+        +void showError(String message)
+        +void showInfo(String message)
+        +Optional~String~ askText(String message, String initialValue)
+        +boolean confirm(String message)
+        +Optional~Path~ chooseTextFile()
+        +Optional~Path~ chooseExportFile(String suggestedName)
     }
 
     class MainPresenter {
@@ -245,11 +271,26 @@ classDiagram
         -Player player
         -InputValidator validator
         -Music current
+        +MainPresenter(MusicLibrary library, Player player, InputValidator validator)
         +void attach(MainView view)
+        +void onNewMusic()
+        +void onTypeText()
+        +void onUpload()
+        +void onSelect(Music music)
         +void onPlayPause()
         +void onStop()
+        +void onRestart()
+        +void onNext()
+        +void onSeek(int permille)
+        +void onOctaveChange(int delta)
+        +void onBpmChange(int steps)
+        +void onVolumeChange(int volume)
         +void onSave()
+        +void onRename(Music music)
+        +void onDelete(Music music)
+        +void onExport(Music music)
         +void onTick()
+        +void onClose()
     }
 
     class MainWindow {
@@ -260,17 +301,31 @@ classDiagram
     class Timeline {
         -List~List~Event~~ voices
         -double length
+        +Timeline(List~List~Event~~ voices)
         +double length()
         +List~Integer~ offsetsAt(double fraction)
     }
 
+    class TimelineEvent["Timeline.Event"] {
+        +int offset()
+        +double start()
+        +double end()
+    }
+
+    Timeline *-- TimelineEvent
+
     class JFuguePlayer {
         -ManagedPlayer managedPlayer
+        +JFuguePlayer()
+        +JFuguePlayer(Player player)
         +void play(String pattern)
         +void pause()
         +void resume()
         +void stop()
         +void seek(int index)
+        +long getTickPosition()
+        +long getTickLength()
+        +boolean isActive()
     }
 
     class ManagedPlayer {
@@ -285,6 +340,8 @@ classDiagram
 
     class TtmException {
         -ErrorCode code
+        +TtmException(ErrorCode code, String message)
+        +TtmException(ErrorCode code, String message, Throwable cause)
         +ErrorCode getCode()
     }
 
