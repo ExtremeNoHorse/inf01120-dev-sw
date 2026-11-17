@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
  */
 public final class Interpreter {
   private static final Pattern DELAY_PATTERN = Pattern.compile("^\\[(\\d+)]\\s*");
-  private static final Pattern NOTE_TOKEN_PATTERN = Pattern.compile("^([A-G][#b]?(?::[1-7])?)");
   // Notes without an explicit duration have no symbol: JFugue plays them as quarter notes.
   private static final Pattern SOUND_TOKEN_PATTERN =
       Pattern.compile("^(?:R|[A-G][#b]?\\d+)([whqistx]?)");
@@ -183,9 +182,8 @@ public final class Interpreter {
       final String remainder = line.substring(index);
 
       // 1. Try to match structured note (A-G with optional #/b and :duration)
-      final Matcher noteMatcher = NOTE_TOKEN_PATTERN.matcher(remainder);
-      if (noteMatcher.find()) {
-        final String noteToken = noteMatcher.group(1);
+      final String noteToken = DomainMapper.matchNoteToken(remainder);
+      if (noteToken != null) {
         final String executedNote = executeCommandToken(noteToken, voiceConfig);
         if (executedNote != null) {
           lastNoteToken = executedNote;
