@@ -2,6 +2,7 @@ package com.player.interpreter.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.player.config.Instrument;
 import com.player.config.PlayerConfig;
 import org.junit.jupiter.api.Test;
 
@@ -50,15 +51,15 @@ class DomainMapperCommandTest {
 
     // When & Then
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_BANDONEON,
+        INSTRUMENT_PREFIX + Instrument.BANDONEON.getProgram(),
         mapper.toDomain("!").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS,
+        INSTRUMENT_PREFIX + Instrument.TUBULAR_BELLS.getProgram(),
         mapper.toDomain(";").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_AGOGO, mapper.toDomain(",").execute(config));
+        INSTRUMENT_PREFIX + Instrument.AGOGO.getProgram(), mapper.toDomain(",").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS,
+        INSTRUMENT_PREFIX + Instrument.TUBULAR_BELLS.getProgram(),
         mapper.toDomain("3").execute(config));
 
     config.setInstrument(10);
