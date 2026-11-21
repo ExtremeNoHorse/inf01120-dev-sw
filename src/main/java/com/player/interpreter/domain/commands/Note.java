@@ -1,6 +1,7 @@
 package com.player.interpreter.domain.commands;
 
 import com.player.config.PlayerConfig;
+import com.player.interpreter.domain.JFugueTokenFactory;
 import com.player.interpreter.domain.MusicalDuration;
 import java.util.Objects;
 
@@ -11,7 +12,6 @@ import java.util.Objects;
  * <p>Supports accidentals (e.g., "#", "b") and duration figures (e.g., semibreve, semínima).
  */
 public record Note(String cmd, MusicalDuration duration) implements Command {
-  private static final String VOLUME_INTENSITY_SEPARATOR = "a";
 
   /**
    * Constructs a new {@code Note} command with no explicit duration (default behavior).
@@ -63,10 +63,7 @@ public record Note(String cmd, MusicalDuration duration) implements Command {
   private static String buildJfugueToken(
       final String jfugueNote, final MusicalDuration duration, final PlayerConfig config) {
     final String durationToken = duration != null ? duration.getJfugueToken() : "";
-    return jfugueNote
-        + config.getOctave()
-        + durationToken
-        + VOLUME_INTENSITY_SEPARATOR
-        + config.getVolume();
+    return JFugueTokenFactory.note(
+        jfugueNote, config.getOctave(), durationToken, config.getVolume());
   }
 }
