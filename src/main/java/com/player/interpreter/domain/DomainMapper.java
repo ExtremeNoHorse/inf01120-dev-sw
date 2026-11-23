@@ -16,8 +16,7 @@ import java.util.regex.Pattern;
  * <p>Acts as a dictionary for the interpreter, encapsulating the rules defined in Phases 1 and 2.
  */
 public final class DomainMapper {
-  private static final Pattern NOTE_PATTERN = Pattern.compile("^([A-G][#b]?)(?::([1-7]))?$");
-  private static final String INSTRUMENT_TOKEN = "I";
+  private static final Pattern NOTE_PATTERN = Pattern.compile("^([A-G][#b]?)(?::([1-7]))?");
   private final Map<String, Command> table;
 
   /**
