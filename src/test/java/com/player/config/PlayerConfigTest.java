@@ -81,23 +81,23 @@ class PlayerConfigTest {
     // Then
     assertEquals(TEST_OCTAVE_6, v0.getOctave());
     assertEquals(TEST_VOL_100, v0.getVolume());
-    assertEquals(PlayerConfig.INSTRUMENT_HARPSICHORD, v0.getInstrument());
+    assertEquals(Voice.SOPRANO.getInstrument().getProgram(), v0.getInstrument());
 
     assertEquals(TEST_OCTAVE_5, v1.getOctave());
     assertEquals(TEST_VOL_80, v1.getVolume());
-    assertEquals(PlayerConfig.INSTRUMENT_CHURCH_ORGAN, v1.getInstrument());
+    assertEquals(Voice.ALTO.getInstrument().getProgram(), v1.getInstrument());
 
     assertEquals(TEST_OCTAVE_4, v2.getOctave());
     assertEquals(TEST_VOL_60, v2.getVolume());
-    assertEquals(PlayerConfig.INSTRUMENT_PIANO, v2.getInstrument());
+    assertEquals(Voice.TENOR.getInstrument().getProgram(), v2.getInstrument());
 
     assertEquals(TEST_OCTAVE_3, v3.getOctave());
     assertEquals(TEST_VOL_40, v3.getVolume());
-    assertEquals(PlayerConfig.INSTRUMENT_BASSOON, v3.getInstrument());
+    assertEquals(Voice.BASS.getInstrument().getProgram(), v3.getInstrument());
 
     assertEquals(TEST_OCTAVE_6, v4.getOctave());
     assertEquals(TEST_VOL_100, v4.getVolume());
-    assertEquals(PlayerConfig.INSTRUMENT_HARPSICHORD, v4.getInstrument());
+    assertEquals(Voice.SOPRANO.getInstrument().getProgram(), v4.getInstrument());
   }
 
   @Test
@@ -190,12 +190,12 @@ class PlayerConfigTest {
   @Test
   void givenGeneralMidiCatalog_whenQueried_thenContainsAtLeast25Instruments() {
     // Given & When
-    final var catalog = PlayerConfig.getGeneralMidiInstruments();
+    final var catalog = Instrument.getGeneralMidiInstruments();
 
     // Then
     assertTrue(catalog.size() >= MIN_GM_INSTRUMENTS);
-    assertTrue(catalog.containsKey(PlayerConfig.INSTRUMENT_CHURCH_ORGAN));
-    assertTrue(catalog.containsKey(PlayerConfig.INSTRUMENT_TUBULAR_BELLS));
+    assertTrue(catalog.containsKey(Instrument.CHURCH_ORGAN.getProgram()));
+    assertTrue(catalog.containsKey(Instrument.TUBULAR_BELLS.getProgram()));
   }
 
   @Test
