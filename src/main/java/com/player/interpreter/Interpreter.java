@@ -115,8 +115,7 @@ public final class Interpreter {
     for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
       final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
-        processVoiceLine(
-            rawLine, voiceIndex, voiceConfig(voiceIndex, settings), settings.getVolume());
+        processVoiceLine(rawLine, voiceIndex, settings.forVoice(voiceIndex), settings.getVolume());
       }
       final int lineEnd = lineStart + rawLine.length();
       lineStart =
@@ -124,13 +123,6 @@ public final class Interpreter {
     }
 
     return this.pattern.toString().trim();
-  }
-
-  private static PlayerConfig voiceConfig(final int voiceIndex, final PlayerConfig settings) {
-    final PlayerConfig voiceConfig = PlayerConfig.forVoice(voiceIndex, settings.getBpm());
-    voiceConfig.setOctave(
-        voiceConfig.getOctave() + settings.getOctave() - settings.getBaseOctave());
-    return voiceConfig;
   }
 
   private void processVoiceLine(
