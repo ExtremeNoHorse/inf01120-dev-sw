@@ -18,8 +18,6 @@ import java.util.regex.Pattern;
  */
 public final class DomainMapper {
   private static final Pattern NOTE_PATTERN = Pattern.compile("^([A-G][#b]?)(?::([1-7]))?$");
-  private static final String INSTRUMENT_TOKEN = "I";
-
   private final Map<String, Command> table;
 
   /**
@@ -74,14 +72,14 @@ public final class DomainMapper {
         new ConfigUpdate(
             cfg -> {
               cfg.increaseBpm(PlayerConfig.BPM_DELTA);
-              return "T" + cfg.getBpm();
+              return JFugueTokenFactory.tempo(cfg.getBpm());
             }));
     map.put(
         "<",
         new ConfigUpdate(
             cfg -> {
               cfg.decreaseBpm(PlayerConfig.BPM_DELTA);
-              return "T" + cfg.getBpm();
+              return JFugueTokenFactory.tempo(cfg.getBpm());
             }));
     map.put(
         " ",
@@ -98,21 +96,21 @@ public final class DomainMapper {
         new ConfigUpdate(
             cfg -> {
               cfg.setInstrument(Instrument.BANDONEON.getProgram());
-              return INSTRUMENT_TOKEN + Instrument.BANDONEON.getProgram();
+              return JFugueTokenFactory.instrument(Instrument.BANDONEON.getProgram());
             }));
     map.put(
         ";",
         new ConfigUpdate(
             cfg -> {
               cfg.setInstrument(Instrument.TUBULAR_BELLS.getProgram());
-              return INSTRUMENT_TOKEN + Instrument.TUBULAR_BELLS.getProgram();
+              return JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram());
             }));
     map.put(
         ",",
         new ConfigUpdate(
             cfg -> {
               cfg.setInstrument(Instrument.AGOGO.getProgram());
-              return INSTRUMENT_TOKEN + Instrument.AGOGO.getProgram();
+              return JFugueTokenFactory.instrument(Instrument.AGOGO.getProgram());
             }));
   }
 
@@ -124,7 +122,7 @@ public final class DomainMapper {
           new ConfigUpdate(
               cfg -> {
                 cfg.setInstrument(Instrument.TUBULAR_BELLS.getProgram());
-                return INSTRUMENT_TOKEN + Instrument.TUBULAR_BELLS.getProgram();
+                return JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram());
               }));
     }
 
@@ -136,7 +134,7 @@ public final class DomainMapper {
               cfg -> {
                 final int newInst = cfg.getInstrument() + even;
                 cfg.setInstrument(newInst);
-                return INSTRUMENT_TOKEN + cfg.getInstrument();
+                return JFugueTokenFactory.instrument(cfg.getInstrument());
               }));
     }
   }

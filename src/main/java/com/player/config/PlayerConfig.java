@@ -92,6 +92,18 @@ public final class PlayerConfig {
     return new PlayerConfig(baseInst, baseOct, baseVol, bpm, baseOct, baseVol, baseInst);
   }
 
+  /**
+   * Creates this configuration's voice-specific settings, preserving its relative octave shift.
+   *
+   * @param voiceIndex index of the voice (0 = soprano, 1 = alto, 2 = tenor, 3 = bass)
+   * @return initialized voice-specific configuration
+   */
+  public PlayerConfig forVoice(final int voiceIndex) {
+    final PlayerConfig voiceConfig = forVoice(voiceIndex, bpm);
+    voiceConfig.setOctave(voiceConfig.octave + octave - baseOctave);
+    return voiceConfig;
+  }
+
   public int getInstrument() {
     return instrument;
   }
