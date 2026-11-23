@@ -31,6 +31,8 @@ public final class Interpreter {
   private int charOffset;
   private double beat;
 
+  private record NoteMatch(int length, SoundToken noteToken) {}
+
   /** Constructs an {@code Interpreter} using the default mapper and configuration. */
   public Interpreter() {
     this(DomainMapper.createDefault(), PlayerConfig.forVoice(0, PlayerConfig.DEFAULT_BPM));
@@ -169,14 +171,12 @@ public final class Interpreter {
       charOffset = firstOffset + index;
       final String remainder = line.substring(index);
 
-      // 1. Try to match structured note (A-G with optional #/b and :duration)
-      final String noteToken = DomainMapper.matchNoteToken(remainder);
-      if (noteToken != null) {
-        final SoundToken executedNote = executeCommandToken(noteToken, voiceConfig);
-        if (executedNote != null) {
-          lastNoteToken = executedNote;
+      final NoteMatch noteMatch = tryProcessStructuredNote(remainder, voiceConfig);
+      if (noteMatch != null) {
+        if (noteMatch.noteToken() != null) {
+          lastNoteToken = noteMatch.noteToken();
         }
-        index += noteToken.length();
+        index += noteMatch.length();
         continue;
       }
 
@@ -185,6 +185,16 @@ public final class Interpreter {
       lastNoteToken = null;
       index++;
     }
+  }
+
+  private NoteMatch tryProcessStructuredNote(
+      final String remainder, final PlayerConfig voiceConfig) {
+    final String noteToken = DomainMapper.matchNoteToken(remainder);
+    if (noteToken == null) {
+      return null;
+    }
+    final SoundToken executedNote = executeCommandToken(noteToken, voiceConfig);
+    return new NoteMatch(noteToken.length(), executedNote);
   }
 
   private SoundToken executeCommandToken(final String token, final PlayerConfig voiceConfig) {
@@ -202,21 +212,27 @@ public final class Interpreter {
 
   private void processSingleCharacter(
       final char ch, final PlayerConfig voiceConfig, final SoundToken lastNoteToken) {
-    // 2. Lowercase note letters: silence / rest
-    if (ch >= 'a' && ch <= 'g') {
+    if (isLowercaseNoteRest(ch)) {
       appendToken(SoundToken.rest());
-      return;
+    } else if (!tryExecuteMappedCommand(ch, voiceConfig)) {
+      emitFallbackToken(lastNoteToken);
     }
+  }
 
+  private static boolean isLowercaseNoteRest(final char ch) {
+    return ch >= 'a' && ch <= 'g';
+  }
+
+  private boolean tryExecuteMappedCommand(final char ch, final PlayerConfig voiceConfig) {
     final String charStr = String.valueOf(ch);
-
-    // 3. Supported mapping commands (?, V, >, <, space, digits, !, ;, ,)
     if (mapper.supports(charStr)) {
       executeCommandToken(charStr, voiceConfig);
-      return;
+      return true;
     }
+    return false;
+  }
 
-    // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
+  private void emitFallbackToken(final SoundToken lastNoteToken) {
     appendToken(Objects.requireNonNullElse(lastNoteToken, SoundToken.rest()));
   }
 
