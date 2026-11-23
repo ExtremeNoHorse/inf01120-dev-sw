@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * <p>Acts as a dictionary for the interpreter, encapsulating the rules defined in Phases 1 and 2.
  */
 public final class DomainMapper {
-  private static final Pattern NOTE_PATTERN = Pattern.compile("^([A-G][#b]?)(?::([1-7]))?$");
+  private static final Pattern NOTE_PATTERN = Pattern.compile("^([A-G][#b]?)(?::([1-7]))?");
   private final Map<String, Command> table;
 
   /**
@@ -137,6 +137,21 @@ public final class DomainMapper {
                 return JFugueTokenFactory.instrument(cfg.getInstrument());
               }));
     }
+  }
+
+  /**
+   * Returns the leading structured note token, or {@code null} if the input does not start with
+   * one.
+   *
+   * @param input the input to inspect
+   * @return the leading note token, or {@code null} if none is found
+   */
+  public static String matchNoteToken(final String input) {
+    if (input == null) {
+      return null;
+    }
+    final Matcher matcher = NOTE_PATTERN.matcher(input);
+    return matcher.lookingAt() ? matcher.group() : null;
   }
 
   /**
