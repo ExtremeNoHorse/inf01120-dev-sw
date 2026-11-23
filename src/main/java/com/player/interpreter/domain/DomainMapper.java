@@ -1,5 +1,6 @@
 package com.player.interpreter.domain;
 
+import com.player.config.Instrument;
 import com.player.config.PlayerConfig;
 import com.player.interpreter.domain.commands.Command;
 import com.player.interpreter.domain.commands.ConfigUpdate;
@@ -94,22 +95,22 @@ public final class DomainMapper {
         "!",
         new ConfigUpdate(
             cfg -> {
-              cfg.setInstrument(PlayerConfig.INSTRUMENT_BANDONEON);
-              return JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_BANDONEON);
+              cfg.setInstrument(Instrument.BANDONEON.getProgram());
+              return JFugueTokenFactory.instrument(Instrument.BANDONEON.getProgram());
             }));
     map.put(
         ";",
         new ConfigUpdate(
             cfg -> {
-              cfg.setInstrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS);
-              return JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS);
+              cfg.setInstrument(Instrument.TUBULAR_BELLS.getProgram());
+              return JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram());
             }));
     map.put(
         ",",
         new ConfigUpdate(
             cfg -> {
-              cfg.setInstrument(PlayerConfig.INSTRUMENT_AGOGO);
-              return JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_AGOGO);
+              cfg.setInstrument(Instrument.AGOGO.getProgram());
+              return JFugueTokenFactory.instrument(Instrument.AGOGO.getProgram());
             }));
   }
 
@@ -120,8 +121,8 @@ public final class DomainMapper {
           String.valueOf(odd),
           new ConfigUpdate(
               cfg -> {
-                cfg.setInstrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS);
-                return JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS);
+                cfg.setInstrument(Instrument.TUBULAR_BELLS.getProgram());
+                return JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram());
               }));
     }
 
