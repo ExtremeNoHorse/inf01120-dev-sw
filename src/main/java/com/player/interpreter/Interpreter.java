@@ -5,8 +5,8 @@ import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.domain.DomainMapper;
 import com.player.interpreter.domain.JFugueTokenFactory;
-import com.player.interpreter.domain.MusicalDuration;
 import com.player.interpreter.domain.commands.Command;
+import com.player.interpreter.domain.commands.SoundToken;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,9 +19,6 @@ import java.util.regex.Pattern;
  */
 public final class Interpreter {
   private static final Pattern DELAY_PATTERN = Pattern.compile("^\\[(\\d+)]\\s*");
-  // Notes without an explicit duration have no symbol: JFugue plays them as quarter notes.
-  private static final Pattern SOUND_TOKEN_PATTERN =
-      Pattern.compile("^(?:R|[A-G][#b]?\\d+)([whqistx]?)");
   private static final String WINDOWS_NEWLINE = "\r\n";
   private static final String SPACE = " ";
   private static final int MAX_DELAY_BEATS = 10_000;
@@ -143,7 +140,7 @@ public final class Interpreter {
     if (delayMatcher.find()) {
       final int delayBeats = delayBeats(delayMatcher.group(1));
       for (int i = 0; i < delayBeats; i++) {
-        appendToken(JFugueTokenFactory.rest());
+        appendToken(SoundToken.rest());
       }
       line = line.substring(delayMatcher.end());
     }
@@ -166,7 +163,7 @@ public final class Interpreter {
 
   private void processLineCharacters(
       final String line, final PlayerConfig voiceConfig, final int firstOffset) {
-    String lastNoteToken = null;
+    SoundToken lastNoteToken = null;
     int index = 0;
     while (index < line.length()) {
       charOffset = firstOffset + index;
@@ -175,7 +172,7 @@ public final class Interpreter {
       // 1. Try to match structured note (A-G with optional #/b and :duration)
       final String noteToken = DomainMapper.matchNoteToken(remainder);
       if (noteToken != null) {
-        final String executedNote = executeCommandToken(noteToken, voiceConfig);
+        final SoundToken executedNote = executeCommandToken(noteToken, voiceConfig);
         if (executedNote != null) {
           lastNoteToken = executedNote;
         }
@@ -190,13 +187,13 @@ public final class Interpreter {
     }
   }
 
-  private String executeCommandToken(final String token, final PlayerConfig voiceConfig) {
+  private SoundToken executeCommandToken(final String token, final PlayerConfig voiceConfig) {
     final Command cmd = mapper.toDomain(token);
     if (cmd == null) {
       return null;
     }
-    final String result = cmd.execute(voiceConfig);
-    if (result != null && !result.isEmpty()) {
+    final SoundToken result = cmd.execute(voiceConfig);
+    if (result != null && !result.token().isEmpty()) {
       appendToken(result);
       return result;
     }
@@ -204,10 +201,10 @@ public final class Interpreter {
   }
 
   private void processSingleCharacter(
-      final char ch, final PlayerConfig voiceConfig, final String lastNoteToken) {
+      final char ch, final PlayerConfig voiceConfig, final SoundToken lastNoteToken) {
     // 2. Lowercase note letters: silence / rest
     if (ch >= 'a' && ch <= 'g') {
-      appendToken(JFugueTokenFactory.rest());
+      appendToken(SoundToken.rest());
       return;
     }
 
@@ -220,15 +217,14 @@ public final class Interpreter {
     }
 
     // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
-    appendToken(Objects.requireNonNullElse(lastNoteToken, JFugueTokenFactory.rest()));
+    appendToken(Objects.requireNonNullElse(lastNoteToken, SoundToken.rest()));
   }
 
-  /** Appends a token to the pattern and, if it is a note or a rest, records when it sounds. */
-  private void appendToken(final String token) {
-    pattern.append(token).append(SPACE);
-    final Matcher sound = SOUND_TOKEN_PATTERN.matcher(token);
-    if (sound.find()) {
-      final double end = beat + MusicalDuration.fromJfugueToken(sound.group(1)).getBeats();
+  /** Appends a token to the pattern and, if it is a sound, records when it sounds. */
+  private void appendToken(final SoundToken soundToken) {
+    pattern.append(soundToken.token()).append(SPACE);
+    if (soundToken.isSound()) {
+      final double end = beat + soundToken.duration().getBeats();
       events.getLast().add(new Timeline.Event(charOffset, beat, end));
       beat = end;
     }

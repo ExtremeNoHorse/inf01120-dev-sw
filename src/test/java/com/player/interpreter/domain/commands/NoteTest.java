@@ -24,10 +24,11 @@ class NoteTest {
     final PlayerConfig config = new PlayerConfig(1, 2, 10, 100);
 
     // When
-    final String result = note.execute(config);
+    final SoundToken result = note.execute(config);
 
     // Then
-    assertEquals("C2a10", result);
+    assertEquals("C2a10", result.token());
+    assertEquals(MusicalDuration.QUARTER_NOTE, result.duration());
     assertEquals("C", note.cmd());
     assertNull(note.duration());
   }
@@ -40,14 +41,16 @@ class NoteTest {
     final PlayerConfig config = new PlayerConfig(1, 5, 80, 120);
 
     // When
-    final String sharpResult = sharpNote.execute(config);
-    final String flatResult = flatNote.execute(config);
+    final SoundToken sharpResult = sharpNote.execute(config);
+    final SoundToken flatResult = flatNote.execute(config);
 
     // Then
-    assertEquals("A#5qa80", sharpResult);
+    assertEquals("A#5qa80", sharpResult.token());
+    assertEquals(MusicalDuration.QUARTER_NOTE, sharpResult.duration());
     assertEquals(MusicalDuration.QUARTER_NOTE, sharpNote.duration());
 
-    assertEquals("Bb5wa80", flatResult);
+    assertEquals("Bb5wa80", flatResult.token());
+    assertEquals(MusicalDuration.WHOLE_NOTE, flatResult.duration());
     assertEquals(MusicalDuration.WHOLE_NOTE, flatNote.duration());
   }
 }

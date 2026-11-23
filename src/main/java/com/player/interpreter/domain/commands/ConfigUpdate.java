@@ -21,7 +21,11 @@ public final class ConfigUpdate implements Command {
   }
 
   @Override
-  public String execute(final PlayerConfig config) {
-    return this.updateAction.apply(config);
+  public SoundToken execute(final PlayerConfig config) {
+    final String result = this.updateAction.apply(config);
+    if (result == null) {
+      return null;
+    }
+    return result.isEmpty() ? SoundToken.EMPTY : SoundToken.of(result);
   }
 }
