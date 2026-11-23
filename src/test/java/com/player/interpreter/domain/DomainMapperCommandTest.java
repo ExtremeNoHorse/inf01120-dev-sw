@@ -6,7 +6,7 @@ import com.player.config.PlayerConfig;
 import org.junit.jupiter.api.Test;
 
 class DomainMapperCommandTest {
-  private static final String INSTRUMENT_PREFIX = "I";
+  private static final int DIGIT_FOUR_NEW_INSTRUMENT = 14;
 
   @Test
   void givenDefaultMapper_whenMappingTempoControls_thenUpdatesBpm() {
@@ -50,18 +50,21 @@ class DomainMapperCommandTest {
 
     // When & Then
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_BANDONEON,
+        JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_BANDONEON),
         mapper.toDomain("!").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS,
+        JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS),
         mapper.toDomain(";").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_AGOGO, mapper.toDomain(",").execute(config));
+        JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_AGOGO),
+        mapper.toDomain(",").execute(config));
     assertEquals(
-        INSTRUMENT_PREFIX + PlayerConfig.INSTRUMENT_TUBULAR_BELLS,
+        JFugueTokenFactory.instrument(PlayerConfig.INSTRUMENT_TUBULAR_BELLS),
         mapper.toDomain("3").execute(config));
 
     config.setInstrument(10);
-    assertEquals(INSTRUMENT_PREFIX + "14", mapper.toDomain("4").execute(config));
+    assertEquals(
+        JFugueTokenFactory.instrument(DIGIT_FOUR_NEW_INSTRUMENT),
+        mapper.toDomain("4").execute(config));
   }
 }

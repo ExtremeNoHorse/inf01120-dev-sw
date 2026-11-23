@@ -4,6 +4,7 @@ import com.player.config.PlayerConfig;
 import com.player.exception.ErrorCode;
 import com.player.exception.TtmException;
 import com.player.interpreter.domain.DomainMapper;
+import com.player.interpreter.domain.JFugueTokenFactory;
 import com.player.interpreter.domain.MusicalDuration;
 import com.player.interpreter.domain.commands.Command;
 import java.util.ArrayList;
@@ -21,10 +22,8 @@ public final class Interpreter {
   // Notes without an explicit duration have no symbol: JFugue plays them as quarter notes.
   private static final Pattern SOUND_TOKEN_PATTERN =
       Pattern.compile("^(?:R|[A-G][#b]?\\d+)([whqistx]?)");
-  private static final String REST_TOKEN = "Rq";
   private static final String WINDOWS_NEWLINE = "\r\n";
   private static final String SPACE = " ";
-  private static final String CHANNEL_VOLUME = ":CE(7,%d)";
   private static final int MAX_DELAY_BEATS = 10_000;
 
   private final DomainMapper mapper;
@@ -107,7 +106,7 @@ public final class Interpreter {
     }
 
     this.pattern = new StringBuilder();
-    this.pattern.append("T").append(settings.getBpm()).append(SPACE);
+    this.pattern.append(JFugueTokenFactory.tempo(settings.getBpm())).append(SPACE);
 
     final String[] lines = text.split("\\r?\\n");
 
@@ -115,8 +114,7 @@ public final class Interpreter {
     for (int voiceIndex = 0; voiceIndex < lines.length; voiceIndex++) {
       final String rawLine = lines[voiceIndex];
       if (!rawLine.trim().isEmpty()) {
-        processVoiceLine(
-            rawLine, voiceIndex, voiceConfig(voiceIndex, settings), settings.getVolume());
+        processVoiceLine(rawLine, voiceIndex, settings.forVoice(voiceIndex), settings.getVolume());
       }
       final int lineEnd = lineStart + rawLine.length();
       lineStart =
@@ -124,13 +122,6 @@ public final class Interpreter {
     }
 
     return this.pattern.toString().trim();
-  }
-
-  private static PlayerConfig voiceConfig(final int voiceIndex, final PlayerConfig settings) {
-    final PlayerConfig voiceConfig = PlayerConfig.forVoice(voiceIndex, settings.getBpm());
-    voiceConfig.setOctave(
-        voiceConfig.getOctave() + settings.getOctave() - settings.getBaseOctave());
-    return voiceConfig;
   }
 
   private void processVoiceLine(
@@ -141,9 +132,9 @@ public final class Interpreter {
     events.add(new ArrayList<>());
     beat = 0;
     charOffset = lineStart;
-    pattern.append("V").append(voiceIndex).append(SPACE);
-    pattern.append("I").append(voiceConfig.getInstrument()).append(SPACE);
-    pattern.append(String.format(CHANNEL_VOLUME, channelVolume)).append(SPACE);
+    pattern.append(JFugueTokenFactory.voice(voiceIndex)).append(SPACE);
+    pattern.append(JFugueTokenFactory.instrument(voiceConfig.getInstrument())).append(SPACE);
+    pattern.append(JFugueTokenFactory.channelVolume(channelVolume)).append(SPACE);
 
     String line = rawLine;
 
@@ -152,7 +143,7 @@ public final class Interpreter {
     if (delayMatcher.find()) {
       final int delayBeats = delayBeats(delayMatcher.group(1));
       for (int i = 0; i < delayBeats; i++) {
-        appendToken(REST_TOKEN);
+        appendToken(JFugueTokenFactory.rest());
       }
       line = line.substring(delayMatcher.end());
     }
@@ -216,7 +207,7 @@ public final class Interpreter {
       final char ch, final PlayerConfig voiceConfig, final String lastNoteToken) {
     // 2. Lowercase note letters: silence / rest
     if (ch >= 'a' && ch <= 'g') {
-      appendToken(REST_TOKEN);
+      appendToken(JFugueTokenFactory.rest());
       return;
     }
 
@@ -229,7 +220,7 @@ public final class Interpreter {
     }
 
     // 4. Fallback / ELSE (consonants, vowels O/I/U, other characters)
-    appendToken(Objects.requireNonNullElse(lastNoteToken, REST_TOKEN));
+    appendToken(Objects.requireNonNullElse(lastNoteToken, JFugueTokenFactory.rest()));
   }
 
   /** Appends a token to the pattern and, if it is a note or a rest, records when it sounds. */
