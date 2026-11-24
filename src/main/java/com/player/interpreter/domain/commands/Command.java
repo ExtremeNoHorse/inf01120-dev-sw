@@ -15,7 +15,7 @@ public interface Command {
    * Executes the command, applying its specific logic to the provided player configuration.
    *
    * @param config the {@link PlayerConfig} instance to be modified or acted upon by this command
-   * @return a formatted JFugue token string resulting from the command execution
+   * @return a {@link SoundToken} resulting from the command execution
    */
-  String execute(final PlayerConfig config);
+  SoundToken execute(final PlayerConfig config);
 }

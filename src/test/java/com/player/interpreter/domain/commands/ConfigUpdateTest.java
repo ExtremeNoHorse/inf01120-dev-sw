@@ -1,6 +1,7 @@
 package com.player.interpreter.domain.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.player.config.PlayerConfig;
@@ -26,10 +27,23 @@ class ConfigUpdateTest {
             });
 
     // When
-    final String result = update.execute(config);
+    final SoundToken result = update.execute(config);
 
     // Then
-    assertEquals("I10", result);
+    assertEquals("I10", result.token());
+    assertNull(result.duration());
     assertEquals(1, config.getOctave());
+  }
+
+  @Test
+  void givenActionReturningEmptyOrNull_whenExecute_thenReturnsEmptyOrNull() {
+    // Given
+    final PlayerConfig config = new PlayerConfig(1, 2, 10, 100);
+    final ConfigUpdate emptyUpdate = new ConfigUpdate(cfg -> "");
+    final ConfigUpdate nullUpdate = new ConfigUpdate(cfg -> null);
+
+    // When & Then
+    assertEquals(SoundToken.EMPTY, emptyUpdate.execute(config));
+    assertNull(nullUpdate.execute(config));
   }
 }

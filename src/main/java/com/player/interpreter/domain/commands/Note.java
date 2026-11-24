@@ -56,8 +56,10 @@ public record Note(String cmd, MusicalDuration duration) implements Command {
   }
 
   @Override
-  public String execute(final PlayerConfig config) {
-    return buildJfugueToken(this.cmd, this.duration, config);
+  public SoundToken execute(final PlayerConfig config) {
+    final MusicalDuration effectiveDuration =
+        this.duration != null ? this.duration : MusicalDuration.QUARTER_NOTE;
+    return new SoundToken(buildJfugueToken(this.cmd, this.duration, config), effectiveDuration);
   }
 
   private static String buildJfugueToken(

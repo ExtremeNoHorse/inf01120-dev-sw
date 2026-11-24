@@ -18,10 +18,10 @@ class DomainMapperCommandTest {
     // When & Then
     assertEquals(
         "T" + (PlayerConfig.DEFAULT_BPM + PlayerConfig.BPM_DELTA),
-        mapper.toDomain(">").execute(config));
+        mapper.toDomain(">").execute(config).token());
     assertEquals(PlayerConfig.DEFAULT_BPM + PlayerConfig.BPM_DELTA, config.getBpm());
 
-    assertEquals("T" + PlayerConfig.DEFAULT_BPM, mapper.toDomain("<").execute(config));
+    assertEquals("T" + PlayerConfig.DEFAULT_BPM, mapper.toDomain("<").execute(config).token());
     assertEquals(PlayerConfig.DEFAULT_BPM, config.getBpm());
   }
 
@@ -52,20 +52,20 @@ class DomainMapperCommandTest {
     // When & Then
     assertEquals(
         JFugueTokenFactory.instrument(Instrument.BANDONEON.getProgram()),
-        mapper.toDomain("!").execute(config));
+        mapper.toDomain("!").execute(config).token());
     assertEquals(
         JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram()),
-        mapper.toDomain(";").execute(config));
+        mapper.toDomain(";").execute(config).token());
     assertEquals(
         JFugueTokenFactory.instrument(Instrument.AGOGO.getProgram()),
-        mapper.toDomain(",").execute(config));
+        mapper.toDomain(",").execute(config).token());
     assertEquals(
         JFugueTokenFactory.instrument(Instrument.TUBULAR_BELLS.getProgram()),
-        mapper.toDomain("3").execute(config));
+        mapper.toDomain("3").execute(config).token());
 
     config.setInstrument(10);
     assertEquals(
         JFugueTokenFactory.instrument(DIGIT_FOUR_NEW_INSTRUMENT),
-        mapper.toDomain("4").execute(config));
+        mapper.toDomain("4").execute(config).token());
   }
 }
