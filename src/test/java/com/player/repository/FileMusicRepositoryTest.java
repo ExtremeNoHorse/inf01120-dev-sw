@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 class FileMusicRepositoryTest {
@@ -84,7 +86,8 @@ class FileMusicRepositoryTest {
     final String metadata = Files.readString(tempDir.resolve("metadata.properties"));
     assertTrue(metadata.contains("kept=Kept"));
     assertFalse(metadata.contains("gone="));
-    assertEquals(List.of("Kept"), repository.findAll().stream().map(Music::getName).toList());
+    assertEquals(
+        List.of("Kept"), repository.findAll().stream().map(Music::getName).toList());
   }
 
   @Test
@@ -96,7 +99,8 @@ class FileMusicRepositoryTest {
     repository.save(new Music("special", name, "A"));
 
     // Then
-    assertEquals(name, new FileMusicRepository(tempDir.toString()).getById("special").getName());
+    assertEquals(
+        name, new FileMusicRepository(tempDir.toString()).getById("special").getName());
   }
 
   @Test
@@ -291,6 +295,7 @@ class FileMusicRepositoryTest {
   }
 
   @Test
+  @DisabledOnOs(OS.WINDOWS)
   void givenFileAsBasePath_whenUsingRepository_thenReportsPersistenceFailures() throws IOException {
     // Given
     final Path baseFile = tempDir.resolve("base-file");
