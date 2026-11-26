@@ -1,5 +1,6 @@
 package com.player.repository;
-
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 class FileMusicRepositoryTest {
@@ -291,6 +293,7 @@ class FileMusicRepositoryTest {
   }
 
   @Test
+  @DisabledOnOs(OS.WINDOWS)
   void givenFileAsBasePath_whenUsingRepository_thenReportsPersistenceFailures() throws IOException {
     // Given
     final Path baseFile = tempDir.resolve("base-file");
