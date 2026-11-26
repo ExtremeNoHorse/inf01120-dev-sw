@@ -61,7 +61,7 @@ Cada princípio SOLID citado no enunciado é aplicado da seguinte forma na arqui
 
 ## Croquis de Interface
 
-As imagens abaixo são os protótipos que guiaram a interface Swing. Para executar a GUI, rode `com.player.App` sem argumentos (detalhes em [docs/INTERFACE_GRAFICA.md](docs/INTERFACE_GRAFICA.md)).
+As imagens abaixo são os protótipos que guiaram a interface Swing. Para executar a GUI, rode `com.player.App` (detalhes em [docs/INTERFACE_GRAFICA.md](docs/INTERFACE_GRAFICA.md)).
 
 ### Tela 1
 

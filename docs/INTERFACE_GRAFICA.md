@@ -4,13 +4,13 @@ Protótipo da interface projetada nos croquis (`front/Tela_1..4`), implementado 
 
 ## Como executar
 
-Sem argumentos, o `App` abre a interface gráfica. Com argumentos, continua funcionando como CLI (`play` / `export`).
+O `App` abre a interface gráfica.
 
 ```bash
 mvn compile exec:java -Dexec.mainClass=com.player.App
 ```
 
-Ou pela IDE: rodar `com.player.App` sem argumentos. As músicas ficam salvas na pasta `musics/` do diretório de execução, que está no `.gitignore`.
+Ou pela IDE: rodar `com.player.App`. As músicas ficam salvas na pasta `musics/` do diretório de execução, que está no `.gitignore`.
 
 ## Telas
 
