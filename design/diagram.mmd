@@ -1,63 +1,109 @@
 ---
 config:
-  theme: default
+  theme: dark
+  themeVariables:
+    primaryTextColor: "#000000"
+    secondaryTextColor: "#000000"
+    tertiaryTextColor: "#000000"
+    textColor: "#000000"
 ---
-%% TTM - Diagrama de Classes Atualizado (Fase 2)
-%%
-%% Evolucoes da Fase 2 incorporadas:
-%%   1. Suporte a polifonia (linhas como vozes V0, V1, V2...) com ciclo de parâmetros base a cada quatro vozes.
-%%   2. MusicalDuration enum para representacao das 7 figuras de duracao (semibreve a semifusa).
-%%   3. Note evoluida com suporte a acidentes (#, b) e duracoes explicitas.
-%%   4. DomainMapper com fabrica createDefault() e suporte a tokens estruturados de nota.
-%%   5. MusicRepository com assinatura correta save(Music music).
-%%   6. AudioEngine + JFuguePlayer com exportacao de arquivo MIDI pelo Player.
-%%   7. Tratamento centralizado de erros via TtmException e ErrorCode.
-%%   8. Interface grafica Swing em MVP: MainWindow -> MainPresenter -> MusicLibrary / Player.
+%% TTM - Diagrama de Classes
+%% Classes do projeto e dependencias JFugue usadas pelo adaptador de audio.
 
 classDiagram
+    App ..> InputValidator : cria
+    App ..> FileMusicRepository : cria
+    App ..> JFuguePlayer : cria
+    App ..> DomainMapper : cria
+    App ..> PlayerConfig : cria
+    App ..> Interpreter : cria
+    App ..> Player : cria
+    App ..> MusicLibrary : cria
     App ..> MainPresenter : cria
+    App ..> MainWindow : abre
+
     MainView <|.. MainWindow
     MainWindow ..> MainPresenter : eventos
+    MainWindow *-- MusicListPanel
+    MainWindow *-- EditorPanel
+    MainWindow *-- PlaybackBar
+    MainWindow ..> StartPanel : cria
+    MainWindow ..> FileDialogs
+    MainWindow ..> Theme
+    MusicListPanel ..> MainPresenter : eventos
+    EditorPanel ..> MainPresenter : eventos
+    PlaybackBar ..> MainPresenter : eventos
+    StartPanel ..> MainPresenter : eventos
+    MusicListPanel ..> Music
+    MusicListPanel ..> Theme
+    EditorPanel ..> Theme
+    PlaybackBar ..> Theme
+    PlaybackBar ..> PlayerConfig
+    StartPanel ..> Theme
+
     MainPresenter --> MainView
     MainPresenter --> MusicLibrary
     MainPresenter --> Player
     MainPresenter --> InputValidator
-    MainPresenter ..> Timeline
+    MainPresenter --> Music : current
+    MainPresenter --> Timeline
+    MainPresenter --> PlaybackState
+    MainPresenter ..> PlayerConfig
+    MainPresenter ..> TtmException
     MusicLibrary --> MusicRepository
-
-    App *-- InputValidator
-    App *-- MusicRepository
-    App *-- Player
-
+    MusicLibrary ..> Music
+    MusicLibrary ..> TtmException
     MusicRepository <|.. FileMusicRepository
-    MusicRepository o-- Music
+    MusicRepository ..> Music
+    FileMusicRepository ..> TtmException
+    InputValidator ..> TtmException
 
-    Player *-- Interpreter
-    Interpreter ..> Timeline : cria
-    Player *-- AudioEngine
-    JFuguePlayer *-- ManagedPlayer
+    Player --> Interpreter
+    Player --> AudioEngine
+    Player ..> Music
+    Player ..> PlayerConfig
+    Player ..> Timeline
+    Player ..> TtmException
     AudioEngine <|.. JFuguePlayer
+    JFuguePlayer --> ManagedPlayer
+    JFuguePlayer ..> JFugueLibraryPlayer
+    JFuguePlayer ..> TtmException
+    JFugueLibraryPlayer --> ManagedPlayer
 
-    Interpreter *-- DomainMapper
-    Interpreter *-- PlayerConfig
-
-    DomainMapper *-- Command
+    Interpreter --> DomainMapper
+    Interpreter --> PlayerConfig
+    Interpreter ..> Timeline : cria
+    Interpreter *-- TimelineEvent : events
+    Interpreter ..> NoteMatch
+    Interpreter ..> Command
+    Interpreter ..> SoundToken
+    Interpreter ..> JFugueTokenFactory
+    Interpreter ..> TtmException
+    NoteMatch --> SoundToken
+    Timeline *-- TimelineEvent
+    DomainMapper --> Command : table
+    DomainMapper ..> Note : cria
+    DomainMapper ..> ConfigUpdate : cria
     DomainMapper ..> MusicalDuration
+    DomainMapper ..> Instrument
+    DomainMapper ..> PlayerConfig
+    DomainMapper ..> JFugueTokenFactory
     Command <|.. Note
     Command <|.. ConfigUpdate
-    Note o-- MusicalDuration
+    Command ..> PlayerConfig
+    Command ..> SoundToken
+    Note --> MusicalDuration
+    Note ..> JFugueTokenFactory
+    SoundToken --> MusicalDuration
+    SoundToken ..> JFugueTokenFactory
+    PlayerConfig ..> Voice
+    Voice --> Instrument
 
-    TtmException *-- ErrorCode
+    TtmException --> ErrorCode
 
     class App {
-        -InputValidator validator
-        -MusicRepository repository
-        -Player player
-        +App()
-        +App(InputValidator validator, MusicRepository repository, Player player)
-        +MainPresenter createPresenter()
-        ~static void main(String[] args)
-        +int run(String[] args)
+        -App()
+        ~void main()$
     }
 
     class InputValidator {
@@ -135,6 +181,10 @@ classDiagram
         -DomainMapper mapper
         -PlayerConfig playerConfig
         -StringBuilder pattern
+        -List~List~TimelineEvent~~ events
+        -int lineStart
+        -int charOffset
+        -double beat
         +Interpreter()
         +Interpreter(DomainMapper mapper, PlayerConfig playerConfig)
         +void configure(PlayerConfig config)
@@ -146,26 +196,52 @@ classDiagram
     class DomainMapper {
         -Map~String,Command~ table
         +DomainMapper(Map~String,Command~ table)
-        +static DomainMapper createDefault()
+        +DomainMapper createDefault()$
+        +String matchNoteToken(String input)$
         +Command toDomain(String c)
         +boolean supports(String c)
     }
 
     class Command {
         <<interface>>
-        +String execute(PlayerConfig config)
+        +SoundToken execute(PlayerConfig config)
     }
 
     class Note {
-        -static String VOLUME_INTENSITY_SEPARATOR
+        <<record>>
         -String cmd
         -MusicalDuration duration
         +Note(String cmd)
         +Note(String cmd, MusicalDuration duration)
         +String cmd()
         +MusicalDuration duration()
-        +String execute(PlayerConfig config)
-        -static String buildJfugueToken(String jfugueNote, MusicalDuration duration, PlayerConfig config)
+        +SoundToken execute(PlayerConfig config)
+        -String buildJfugueToken(String jfugueNote, MusicalDuration duration, PlayerConfig config)$
+    }
+
+    class SoundToken {
+        <<record>>
+        -String token
+        -MusicalDuration duration
+        +SoundToken EMPTY$
+        +SoundToken(String token, MusicalDuration duration)
+        +String token()
+        +MusicalDuration duration()
+        +SoundToken of(String token)$
+        +SoundToken of(String token, MusicalDuration duration)$
+        +SoundToken rest()$
+        +boolean isSound()
+    }
+
+    class JFugueTokenFactory {
+        -String VOLUME_INTENSITY_SEPARATOR$
+        -JFugueTokenFactory()
+        +String tempo(int bpm)$
+        +String voice(int index)$
+        +String instrument(int id)$
+        +String channelVolume(int volume)$
+        +String rest()$
+        +String note(String name, int octave, String durationSymbol, int velocity)$
     }
 
     class MusicalDuration {
@@ -182,14 +258,14 @@ classDiagram
         +int getId()
         +String getJfugueToken()
         +double getBeats()
-        +static MusicalDuration fromJfugueToken(String jfugueToken)
-        +static MusicalDuration fromId(int id)
+        +MusicalDuration fromJfugueToken(String jfugueToken)$
+        +MusicalDuration fromId(int id)$
     }
 
     class ConfigUpdate {
         -Function~PlayerConfig, String~ updateAction
         +ConfigUpdate(Function~PlayerConfig,String~ updateAction)
-        +String execute(PlayerConfig config)
+        +SoundToken execute(PlayerConfig config)
     }
 
     class PlayerConfig {
@@ -202,8 +278,8 @@ classDiagram
         -int baseInstrument
         +PlayerConfig(int instrument, int octave, int volume, int bpm)
         +PlayerConfig(PlayerConfig source)
-        +static PlayerConfig forVoice(int voiceIndex, int bpm)
-        +static Map~Integer,String~ getGeneralMidiInstruments()
+        +PlayerConfig forVoice(int voiceIndex, int bpm)$
+        +PlayerConfig forVoice(int voiceIndex)
         +int getInstrument()
         +void setInstrument(int instrument)
         +int getOctave()
@@ -220,6 +296,58 @@ classDiagram
         +void doubleVolume()
         +void increaseBpm(int delta)
         +void decreaseBpm(int delta)
+        +boolean equals(Object obj)
+        +int hashCode()
+    }
+
+    class Voice {
+        <<enumeration>>
+        SOPRANO
+        ALTO
+        TENOR
+        BASS
+        -int baseOctave
+        -int baseVolume
+        -Instrument instrument
+        ~Voice forIndex(int voiceIndex)$
+        +int getBaseOctave()
+        +int getBaseVolume()
+        +Instrument getInstrument()
+    }
+
+    class Instrument {
+        <<enumeration>>
+        PIANO
+        HARPSICHORD
+        MARIMBA
+        XYLOPHONE
+        TUBULAR_BELLS
+        CHURCH_ORGAN
+        BANDONEON
+        GUITAR_ACOUSTIC
+        GUITAR_ELECTRIC
+        BASS_ACOUSTIC
+        VIOLIN
+        CELLO
+        TIMPANI
+        CHOIR_AAHS
+        TRUMPET
+        TROMBONE
+        FRENCH_HORN
+        ALTO_SAX
+        OBOE
+        BASSOON
+        CLARINET
+        FLUTE
+        SYNTH_LEAD
+        BAGPIPE
+        AGOGO
+        SEASHORE
+        -int program
+        -String displayName
+        +int getProgram()
+        +String getName()
+        +Map~Integer,String~ getGeneralMidiInstruments()$
     }
 
     class AudioEngine {
@@ -240,8 +368,8 @@ classDiagram
         +List~Music~ listAll()
         +Music create(String name)
         +Music importFile(Path source)
-        +Music saveContent(Music music, String content)
-        +Music rename(Music music, String newName)
+        +void saveContent(Music music, String content)
+        +void rename(Music music, String newName)
         +void delete(Music music)
     }
 
@@ -270,7 +398,12 @@ classDiagram
         -MusicLibrary library
         -Player player
         -InputValidator validator
+        -MainView view
         -Music current
+        -Timeline timeline
+        -PlaybackState state
+        -boolean sessionStarted
+        -long pendingSeek
         +MainPresenter(MusicLibrary library, Player player, InputValidator validator)
         +void attach(MainView view)
         +void onNewMusic()
@@ -295,7 +428,78 @@ classDiagram
 
     class MainWindow {
         -JFrame frame
-        +static void open(MainPresenter presenter)
+        -CardLayout cards
+        -JPanel center
+        -MusicListPanel musicList
+        -EditorPanel editor
+        -PlaybackBar playbackBar
+        -MainWindow(MainPresenter presenter)
+        +void open(MainPresenter presenter)$
+    }
+
+    class PlaybackState["MainPresenter.PlaybackState"] {
+        <<enumeration>>
+        STOPPED
+        PLAYING
+        PAUSED
+    }
+
+    class StartPanel {
+        -JPanel panel
+        ~StartPanel(MainPresenter presenter)
+        ~JPanel component()
+    }
+
+    class EditorPanel {
+        -JPanel panel
+        -JTextArea textArea
+        -HighlightPainter painter
+        ~EditorPanel(MainPresenter presenter)
+        ~JPanel component()
+        ~void setText(String text)
+        ~String getText()
+        ~void enableEditing()
+        ~void disableEditing()
+        ~void highlight(List~Integer~ offsets)
+    }
+
+    class MusicListPanel {
+        -JPanel panel
+        -DefaultListModel~Music~ model
+        -JList~Music~ list
+        -boolean updating
+        ~MusicListPanel(MainPresenter presenter)
+        ~JPanel component()
+        ~void show(List~Music~ musics, Music selected)
+    }
+
+    class PlaybackBar {
+        -JPanel panel
+        -JSlider progress
+        -JSlider volume
+        -JLabel octaveLabel
+        -JLabel bpmLabel
+        -JButton playButton
+        -boolean updating
+        ~PlaybackBar(MainPresenter presenter)
+        ~JPanel component()
+        ~void showSettings(int octave, int bpm, int volumeValue)
+        ~void showPlayButton()
+        ~void showPauseButton()
+        ~void showProgress(int permille)
+    }
+
+    class FileDialogs {
+        -FileDialogs()
+        ~Optional~Path~ open(Component parent)$
+        ~Optional~Path~ save(Component parent, String name)$
+    }
+
+    class Theme {
+        -Theme()
+        ~Border createBorder(int vertical, int horizontal)$
+        ~JButton primaryButton(String text, Runnable action)$
+        ~JButton iconButton(String text, String tooltip, Runnable action)$
     }
 
     class Timeline {
@@ -307,17 +511,29 @@ classDiagram
     }
 
     class TimelineEvent["Timeline.Event"] {
+        <<record>>
+        -int offset
+        -double start
+        -double end
+        +Event(int offset, double start, double end)
         +int offset()
         +double start()
         +double end()
     }
 
-    Timeline *-- TimelineEvent
+    class NoteMatch["Interpreter.NoteMatch"] {
+        <<record>>
+        -int length
+        -SoundToken noteToken
+        -NoteMatch(int length, SoundToken noteToken)
+        +int length()
+        +SoundToken noteToken()
+    }
 
     class JFuguePlayer {
         -ManagedPlayer managedPlayer
         +JFuguePlayer()
-        +JFuguePlayer(Player player)
+        +JFuguePlayer(org.jfugue.player.Player player)
         +void play(String pattern)
         +void pause()
         +void resume()
@@ -328,7 +544,15 @@ classDiagram
         +boolean isActive()
     }
 
-    class ManagedPlayer {
+    class JFugueLibraryPlayer["org.jfugue.player.Player"] {
+        <<external>>
+        +Player()
+        +ManagedPlayer getManagedPlayer()
+    }
+
+    class ManagedPlayer["org.jfugue.player.ManagedPlayer"] {
+        <<external>>
+        +void start(Sequence sequence)
         +void pause()
         +void resume()
         +void finish()
@@ -336,6 +560,10 @@ classDiagram
         +void seek(long tick)
         +boolean isPlaying()
         +boolean isPaused()
+        +boolean isStarted()
+        +boolean isFinished()
+        +long getTickPosition()
+        +long getTickLength()
     }
 
     class TtmException {
